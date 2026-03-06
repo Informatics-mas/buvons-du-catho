@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+body{
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Fade-in up */
+@keyframes fadeInUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Glow doré pulsant */
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 5px #D4AF37, 0 0 10px #D4AF37; }
+  50% { text-shadow: 0 0 20px #D4AF37, 0 0 30px #D4AF37; }
+}
+
+/* Classes utilitaires */
+.animate-fadeInUp { animation: fadeInUp 1s ease-out forwards; }
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+
+/* Dégradé overlay lumière divine */
+.hero-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.6), rgba(255,215,0,0.15), rgba(0,0,0,0.4));
+}
+
+/* Sparkles divines */
+.sparkle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #D4AF37;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: sparkle 2s linear infinite;
+}
+
+@keyframes sparkle {
+  0% { transform: translateY(0) scale(1); opacity:0.8; }
+  50% { transform: translateY(50px) scale(1.2); opacity:0.5; }
+  100% { transform: translateY(100px) scale(1); opacity:0; }
+}
+
+/* Fade-in pour chaque bloc */
+.animate-fadeIn {
+  animation: fadeInUp 1s ease-out forwards;
+}
+
+/* Bloc card */
+.spirit-card {
+  background: rgba(0,0,0,0.6); /* fond sombre semi-transparent */
+  backdrop-filter: blur(6px);
+  border-left: 4px solid #D4AF37;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+  color: white;
+}
