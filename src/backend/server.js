@@ -22,7 +22,7 @@ import standTypeRoutes from "./routes/standTypeRoutes.js";
 
 // --- MIDDLEWARES ---
 app.use(cors({
-  origin: "https://buvons-du-catho.onrender.com", // L'adresse de ton frontend React
+  origin: "https://buvons-du-catho.vercel.app", // L'adresse de ton frontend React
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
