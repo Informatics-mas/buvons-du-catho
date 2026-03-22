@@ -21,10 +21,27 @@ import donroutes from "./routes/donroutes.js";
 import standTypeRoutes from "./routes/standTypeRoutes.js";
 
 // --- MIDDLEWARES ---
+
+// Liste des origines autorisées
+const allowedOrigins = [
+  'https://buvons-du-catho.vercel.app', // Ton site en ligne
+  'http://localhost:5173'               // Ton environnement local (Vite)
+];
+
 app.use(cors({
-  origin: "https://buvons-du-catho.vercel.app", // L'adresse de ton frontend React
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  origin: function (origin, callback) {
+    // Permet les requêtes sans origine (comme Postman ou mobiles)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Bloqué par la politique CORS de Informatics'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
