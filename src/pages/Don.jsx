@@ -159,7 +159,7 @@ export default function Don() {
                   placeholder="Ex: 0769458746"
                   value={numero}
                   onChange={(e) => setNumero(e.target.value)}
-                  className="..."
+                  className="w-full p-4 rounded-xl bg-[#0B1A3B]/50 border border-white/10 text-white focus:border-yellow-500 outline-none transition-all"
                   required
                 />
               </div>
