@@ -73,7 +73,7 @@ app.use("/api/dashboard", dashboardRoutes);
 // On utilise 'app' ici au lieu de 'router' et on importe les modèles nécessaires
 import Don from "./models/don.js";
 import Reservation from "./models/reservation.js";
-import StandType from "./models/standType.js";
+import StandType from "./models/StandType.js";
 import { protect } from "./middleware/authMiddleware.js"; // Utilise ton middleware de protection
 
 app.post("/api/admin/reset-edition", protect, async (req, res) => {
