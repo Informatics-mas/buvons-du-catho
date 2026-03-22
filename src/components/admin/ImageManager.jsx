@@ -13,7 +13,7 @@ export default function ImageManager() {
   const fileInputRef = useRef(null); // Pour vider l'input fichier après upload
 
   // URL de ton backend sur Render (Pense à centraliser cette URL plus tard)
-  const API_URL = "http://localhost:5000/api/images";
+  const API_URL = "https://buvons-du-catho.onrender.com/api/images";
 
   // 1. Charger la galerie
   const fetchImages = async () => {

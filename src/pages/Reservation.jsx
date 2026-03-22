@@ -17,10 +17,10 @@ export default function Reservation() {
     nombreStands: 1,
   });
 
-  const API_BASE_URL = "http://localhost:5000/api"; 
+  const API_BASE_URL = "https://buvons-du-catho.onrender.com/api"; 
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/stand-types")
+    fetch("https://buvons-du-catho.onrender.com/api/stand-types")
       .then((res) => {
         if (!res.ok) throw new Error("Erreur lors du chargement des produits");
         return res.json();

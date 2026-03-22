@@ -33,7 +33,7 @@ export default function Admin() {
       const token = localStorage.getItem("adminToken"); // Cohérence avec ProtectedRoute
 
       try {
-        const res = await fetch("http://localhost:5000/api/dashboard/stats", {
+        const res = await fetch("https://buvons-du-catho.onrender.com/api/dashboard/stats", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
