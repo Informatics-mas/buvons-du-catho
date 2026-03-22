@@ -6,34 +6,40 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// GET /api/dashboard/stats - Récupère les statistiques globales
+// GET /api/dashboard/stats - Récupère les statistiques et les détails pour l'export
 router.get("/stats", protect, async (req, res) => {
   try {
-    // 1. Exécution des comptages en parallèle pour plus de rapidité sur Render
-    const [totalImages, totalReservations, totalDons, reservationsEnAttente] = await Promise.all([
+    // 1. Exécution de toutes les requêtes en parallèle (Rapidité Render)
+    const [
+      totalImages, 
+      totalReservations, 
+      totalDons, 
+      aggregation,
+      detailsDons,
+      detailsReservations
+    ] = await Promise.all([
       Image.countDocuments(),
       Reservation.countDocuments(),
       Don.countDocuments(),
-      Reservation.countDocuments({ statut: "en_attente" }) // Bonus : voir le travail restant
-    ]);
-
-    // 2. Calcul du montant total des dons
-    const aggregation = await Don.aggregate([
-      { $group: { _id: null, total: { $sum: "$montant" } } }
+      Don.aggregate([{ $group: { _id: null, total: { $sum: "$montant" } } }]),
+      // On récupère les listes complètes pour le bouton Excel du Frontend
+      Don.find().sort({ createdAt: -1 }),
+      Reservation.find().sort({ createdAt: -1 })
     ]);
 
     const totalMontant = aggregation[0]?.total || 0;
 
-    // 3. Réponse structurée pour le Frontend
+    // 2. Réponse structurée pour le Dashboard et l'Excel
     res.json({
       success: true,
       stats: {
         totalImages,
         totalReservations,
-        reservationsEnAttente,
         totalDons,
         totalMontant,
-        devise: "FCFA" // Pratique pour l'affichage auto sur le site
+        detailsDons,         // 👈 Envoyé au Front pour XLSX
+        detailsReservations, // 👈 Envoyé au Front pour XLSX
+        devise: "FCFA"
       }
     });
 
@@ -41,7 +47,7 @@ router.get("/stats", protect, async (req, res) => {
     console.error("Erreur Dashboard Stats:", error);
     res.status(500).json({ 
       success: false, 
-      message: "Impossible de charger les statistiques du tableau de bord." 
+      message: "Impossible de charger les statistiques et les détails." 
     });
   }
 });

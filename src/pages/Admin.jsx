@@ -14,6 +14,7 @@ import {
   Legend,
   Title
 } from "chart.js";
+import * as XLSX from 'xlsx';
 
 // Enregistrement des composants Chart.js
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title);
@@ -24,29 +25,81 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
 
   const handleLogout = () => {
-    localStorage.clear(); // Plus sûr pour nettoyer la session
+    localStorage.clear();
     navigate("/login");
+  };
+
+  // --- FONCTION EXPORT EXCEL ---
+  const exporterDonnees = () => {
+    if (!stats) return alert("Aucune donnée à exporter.");
+
+    // Note : On utilise ici les données brutes que ton backend doit renvoyer dans l'objet stats
+    const feuilleDons = (stats.detailsDons || []).map(d => ({
+      Nom: d.nom,
+      Email: d.email,
+      Montant: d.montant,
+      Devise: "FCFA",
+      Date: new Date(d.createdAt).toLocaleDateString('fr-FR')
+    }));
+
+    const feuilleReservations = (stats.detailsReservations || []).map(r => ({
+      Exposant: r.nomResponsable,
+      Structure: r.nomStructure,
+      Telephone: r.telephone,
+      Type_Stand: r.typeStand,
+      Statut: r.paye ? "Payé" : "En attente"
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const wsDons = XLSX.utils.json_to_sheet(feuilleDons);
+    const wsResa = XLSX.utils.json_to_sheet(feuilleReservations);
+
+    XLSX.utils.book_append_sheet(wb, wsDons, "Dons");
+    XLSX.utils.book_append_sheet(wb, wsResa, "Reservations");
+
+    XLSX.writeFile(wb, `BuvonsDuCatho_Bilan_${new Date().getFullYear()}.xlsx`);
+  };
+
+  // --- FONCTION RESET ---
+  const handleReset = async () => {
+    const confirmReset = window.confirm(
+      "⚠️ ATTENTION : Voulez-vous vraiment TOUT effacer (Dons et Réservations) pour la nouvelle édition ?"
+    );
+
+    if (confirmReset) {
+      const token = localStorage.getItem("adminToken");
+      try {
+        const res = await fetch("https://buvons-du-catho.onrender.com/api/admin/reset-edition", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          alert("Base de données réinitialisée ! ✨");
+          window.location.reload();
+        }
+      } catch (error) {
+        alert("Erreur lors de la réinitialisation.");
+      }
+    }
   };
 
   useEffect(() => {
     const fetchStats = async () => {
-      const token = localStorage.getItem("adminToken"); // Cohérence avec ProtectedRoute
-
+      const token = localStorage.getItem("adminToken");
       try {
         const res = await fetch("https://buvons-du-catho.onrender.com/api/dashboard/stats", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (res.status === 401 || res.status === 403) {
-          handleLogout(); // Redirection si le token est expiré ou invalide
+          handleLogout();
           return;
         }
 
         const data = await res.json();
         if (data.success) {
-          setStats(data.stats); // 👈 On enregistre directement le contenu de "stats"
+          setStats(data.stats);
         }
       } catch (error) {
         console.error("Erreur stats:", error);
@@ -64,92 +117,71 @@ export default function Admin() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4 border-b border-white/10 pb-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-yellow-500">
-            🔐 Dashboard Administrateur
-          </h1>
-          <p className="text-gray-400 mt-1 text-sm md:text-base">Gestion globale de l'événement Buvons du Catho</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-yellow-500">🔐 Dashboard</h1>
+          <p className="text-gray-400 mt-1">Informatics Admin System v1.0</p>
         </div>
-
-        <button
-          onClick={handleLogout}
-          className="bg-red-600/20 text-red-400 border border-red-600/50 px-6 py-2 rounded-full hover:bg-red-600 hover:text-white transition-all font-semibold"
-        >
-          Se déconnecter
+        <button onClick={handleLogout} className="bg-red-600/20 text-red-400 border border-red-600/50 px-6 py-2 rounded-full hover:bg-red-600 hover:text-white transition-all">
+          Déconnexion
         </button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-yellow-500"></div>
-        </div>
+        <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-yellow-500"></div></div>
       ) : stats && (
         <>
-          {/* STATS CARDS */}
+          {/* CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             {[
               { label: "Images", value: stats.totalImages, color: "text-blue-400" },
               { label: "Réservations", value: stats.totalReservations, color: "text-yellow-500" },
               { label: "Dons", value: stats.totalDons, color: "text-green-400" },
-              // On ajoute "(stats.totalMontant || 0)" pour éviter le undefined
-{ label: "Total Récolté", 
-  value: stats.totalMontant ? `${stats.totalMontant.toLocaleString()} FCFA` : "0 FCFA", 
-  color: "text-emerald-400" 
-}
+              { label: "Total Récolté", value: `${(stats.totalMontant || 0).toLocaleString()} FCFA`, color: "text-emerald-400" }
             ].map((stat, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm shadow-xl hover:bg-white/10 transition-colors">
-                <h3 className="text-gray-400 text-sm font-medium uppercase tracking-wider">{stat.label}</h3>
-                <p className={`text-2xl md:text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
+              <div key={i} className="bg-white/5 border border-white/10 p-6 rounded-2xl shadow-xl">
+                <h3 className="text-gray-400 text-sm uppercase">{stat.label}</h3>
+                <p className={`text-2xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
               </div>
             ))}
           </div>
 
-          {/* GRAPHIQUE */}
-          <div className="bg-white/5 border border-white/10 p-4 md:p-8 rounded-2xl mb-16 shadow-2xl overflow-hidden">
-            <div className="h-[300px] md:h-[400px]">
-              <Bar
-                data={{
-                  labels: ["Réservations", "Dons", "Images"],
-                  datasets: [
-                    {
-                      label: "Volume d'activité",
-                      data: [stats.totalReservations, stats.totalDons, stats.totalImages],
-                      backgroundColor: ["#EAB308", "#22C55E", "#3B82F6"],
-                      borderRadius: 8,
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false },
-                    title: {
-                      display: true,
-                      text: "RÉSUMÉ DES ACTIVITÉS",
-                      color: "#94a3b8",
-                      font: { size: 14, weight: 'bold' },
-                      padding: 20
-                    },
-                  },
-                  scales: {
-                    x: { ticks: { color: "#94a3b8" }, grid: { display: false } },
-                    y: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" } },
-                  },
-                }}
-              />
-            </div>
+          {/* GRAPH */}
+          <div className="bg-white/5 border border-white/10 p-6 rounded-2xl mb-16 h-[400px]">
+            <Bar
+              data={{
+                labels: ["Réservations", "Dons", "Images"],
+                datasets: [{
+                  label: "Activité",
+                  data: [stats.totalReservations, stats.totalDons, stats.totalImages],
+                  backgroundColor: ["#EAB308", "#22C55E", "#3B82F6"],
+                }]
+              }}
+              options={{ responsive: true, maintainAspectRatio: false }}
+            />
           </div>
         </>
       )}
 
-      {/* SECTIONS DE GESTION */}
-      <div className="space-y-20 max-w-6xl mx-auto">
-        <section id="images"><ImageManager /></section>
-        <section id="reservations"><ReservationManager /></section>
-        <section id="stand-types"><StandTypeManager /></section>
-        <section id="dons"><DonManager /></section>
+      {/* MANAGERS */}
+      <div className="space-y-20 max-w-6xl mx-auto mb-20">
+        <ImageManager />
+        <ReservationManager />
+        <StandTypeManager />
+        <DonManager />
       </div>
-
+      
+      {/* ZONE DANGER / EXPORT */}
+      <div className="bg-white/5 p-8 rounded-3xl border border-red-500/20 mt-12 mb-10">
+        <h3 className="text-2xl font-bold text-yellow-500 mb-4">Fin d'Édition</h3>
+        <p className="text-gray-400 mb-6">Action irréversible. Téléchargez toujours le bilan avant de réinitialiser.</p>
+        <div className="flex flex-wrap gap-4">
+          <button onClick={exporterDonnees} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl transition-all">
+            📥 Exporter le Bilan (Excel)
+          </button>
+          <button onClick={handleReset} className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl transition-all">
+            🗑️ Réinitialiser l'Édition
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

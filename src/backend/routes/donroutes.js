@@ -8,16 +8,16 @@ const router = express.Router();
 // On enlève "protect" ici pour que les visiteurs puissent faire un don !
 router.post("/", async (req, res) => {
   try {
-    const { nom, email, montant } = req.body;
+    const { nom, numero, montant } = req.body;
 
     // Validation simple pour éviter les dons vides
-    if (!nom || !email || !montant) {
+    if (!nom || !numero || !montant) {
       return res.status(400).json({ message: "Veuillez remplir tous les champs obligatoires." });
     }
 
     const nouveauDon = new Don({
       nom,
-      email,
+      numero,
       montant
     });
 

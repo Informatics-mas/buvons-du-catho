@@ -66,8 +66,38 @@ app.use("/api/auth", authRoutes);
 app.use("/api/images", imageroutes);
 app.use("/api/reservations", reservatioroute);
 app.use("/api/dons", donroutes);
-app.use("/api/stand-types", standTypeRoutes); // 👈 Route unique pour les catégories de stands
+app.use("/api/stand-types", standTypeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+
+// --- ROUTES ADMINISTRATIVES SPÉCIALES ---
+// On utilise 'app' ici au lieu de 'router' et on importe les modèles nécessaires
+import Don from "./models/don.js";
+import Reservation from "./models/reservation.js";
+import StandType from "./models/standType.js";
+import { protect } from "./middleware/authMiddleware.js"; // Utilise ton middleware de protection
+
+app.post("/api/admin/reset-edition", protect, async (req, res) => {
+  try {
+    // 1. Supprimer toutes les réservations et les dons
+    await Promise.all([
+      Reservation.deleteMany({}),
+      Don.deleteMany({})
+    ]);
+
+    // 2. Remettre les compteurs de stands à leur capacité initiale
+    const stands = await StandType.find({});
+    for (let stand of stands) {
+      // Si tu n'as pas de champ capaciteTotale, on peut mettre une valeur par défaut (ex: 10)
+      stand.quantite = stand.capaciteTotale || 10; 
+      await stand.save();
+    }
+
+    res.json({ success: true, message: "L'édition a été réinitialisée avec succès ! 🚀" });
+  } catch (error) {
+    console.error("Erreur Reset:", error);
+    res.status(500).json({ success: false, message: "Erreur lors de la réinitialisation." });
+  }
+});
 
 // --- ROUTE DE TEST & ACCUEIL ---
 app.get("/", (req, res) => {
