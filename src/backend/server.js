@@ -1,46 +1,69 @@
+import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import cors from "cors";
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Imports des fichiers de routes
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// --- CONFIGURATION ---
+dotenv.config({ path: path.join(__dirname, '.env') });
+const app = express();
+
+// --- IMPORTS DES ROUTES ---
 import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import imageroutes from "./routes/imageroutes.js";
 import reservatioroute from "./routes/reservatioroute.js";
 import donroutes from "./routes/donroutes.js";
 import standTypeRoutes from "./routes/standTypeRoutes.js";
-import produitStandRoutes from "./routes/produitStandRoutes.js";
 
-// 1. Configurer les variables d'environnement
-dotenv.config();
-
-// 2. Créer l'application Express (INDISPENSABLE avant les app.use)
-const app = express();
-
-// 3. Middlewares (Configuration)
-app.use(cors());
+// --- MIDDLEWARES ---
+app.use(cors({
+  origin: "http://localhost:5173", // L'adresse de ton frontend React
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// 4. Connexion à MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connecté ✅"))
-  .catch((err) => console.log("Erreur MongoDB ❌ :", err));
+// Rendre le dossier des images public
+app.use('/uploads', express.static(path.join(path.resolve(), 'uploads')));
 
-// 5. BRANCHEMENT DES ROUTES EXTERNES
-// On les branche APRES avoir créé 'app'
+// --- CONNEXION MONGODB ---
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB connecté avec succès ✅");
+  } catch (err) {
+    console.error("Erreur de connexion MongoDB ❌ :", err.message);
+    process.exit(1); // Arrête le serveur si la DB n'est pas connectée
+  }
+};
+connectDB();
+
+// --- BRANCHEMENT DES ROUTES API ---
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageroutes);
 app.use("/api/reservations", reservatioroute);
 app.use("/api/dons", donroutes);
-app.use("/api/stand-types", standTypeRoutes);
+app.use("/api/stand-types", standTypeRoutes); // 👈 Route unique pour les catégories de stands
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/produits", produitStandRoutes);
 
-// Note : Comme tu utilises des fichiers de routes externes (imageroutes, donroutes, etc.), 
-// tu n'as normalement plus besoin d'écrire les app.get("/api/images") ici, 
-// car ils sont déjà définis à l'intérieur de tes fichiers dans le dossier ./routes/
+// --- ROUTE DE TEST & ACCUEIL ---
+app.get("/", (req, res) => {
+  res.send("🚀 API Buvons du Catho est en ligne et fonctionnelle !");
+});
 
-// 6. DÉMARRAGE DU SERVEUR
+// --- GESTION DES ERREURS 404 ---
+app.use((req, res) => {
+  res.status(404).json({ message: "Route introuvable sur le serveur." });
+});
+
+// --- DÉMARRAGE DU SERVEUR ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀`));
+app.listen(PORT, () => {
+  console.log(`Serveur démarré sur le port ${PORT} 🚀`);
+});

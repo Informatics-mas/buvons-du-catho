@@ -1,48 +1,77 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 
 export default function Hero() {
+  const containerRef = useRef(null);
+
   useEffect(() => {
-    const container = document.getElementById("hero-container");
-    // Sécurité : on vérifie que le container existe avant de boucler
-    if (container) {
-      for (let i = 0; i < 30; i++) {
-        const sparkle = document.createElement("div");
-        sparkle.className = "sparkle";
-        sparkle.style.left = `${Math.random() * 100}%`;
-        sparkle.style.animationDelay = `${Math.random() * 2}s`;
-        sparkle.style.width = `${2 + Math.random() * 4}px`;
-        sparkle.style.height = sparkle.style.width;
-        container.appendChild(sparkle);
-      }
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Nettoyage au cas où le composant re-render
+    container.querySelectorAll(".sparkle").forEach(s => s.remove());
+
+    for (let i = 0; i < 35; i++) {
+      const sparkle = document.createElement("div");
+      sparkle.className = "sparkle absolute bg-white rounded-full pointer-events-none opacity-0";
+      
+      const size = 2 + Math.random() * 4;
+      sparkle.style.width = `${size}px`;
+      sparkle.style.height = `${size}px`;
+      sparkle.style.left = `${Math.random() * 100}%`;
+      sparkle.style.top = `${Math.random() * 100}%`;
+      sparkle.style.animation = `twinkle ${2 + Math.random() * 3}s infinite ${Math.random() * 2}s`;
+      
+      container.appendChild(sparkle);
     }
   }, []);
 
   return (
-    // AJOUT DE id="hero-container" ICI 👇
-    <section id="hero-container" className="relative min-h-screen flex items-center justify-center text-center text-white bg-[#0B1A3B] overflow-hidden">
-      {/* ... tout le reste de ton code reste identique ... */}
-      <div className="absolute inset-0 bg-[url('/church-bg.jpg')] bg-cover bg-center opacity-30"></div>
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-[#0B1A3B]/20 to-black/40 pointer-events-none"></div>
+    <section 
+      ref={containerRef} 
+      className="relative min-h-screen flex items-center justify-center text-center text-white bg-[#0B1A3B] overflow-hidden"
+    >
+      {/* Background avec overlay */}
+      <div className="absolute inset-0 bg-[url('/church-bg.jpg')] bg-cover bg-center opacity-45"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-[#0B1A3B]"></div>
 
-      <div className="relative z-10 px-6">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fadeInUp animate-glow text-cathoGold">
+      {/* Contenu Principal */}
+      <div className="relative z-10 px-6 max-w-4xl">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-fadeInUp text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">
           ✝️ Le Buvons du Catho
         </h1>
-        <p className="text-lg md:text-2xl mb-8 max-w-2xl mx-auto animate-fadeInUp">
-          Un festival de foi, de fraternité et de partage.<br />
-          🙏 Prière • 🍹 Convivialité • ❤️ Communion
+        
+        <p className="text-xl md:text-2xl mb-10 text-gray-200 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+          Un festival de foi, de fraternité et de partage.<br className="hidden md:block" />
+          <span className="text-yellow-200/80">🙏 Prière • 🍹 Convivialité • ❤️ Communion</span>
         </p>
-        <div className="flex flex-col md:flex-row gap-6 justify-center animate-fadeInUp">
-          <a href="/reservation"
-             className="bg-cathoGold text-black px-6 py-3 rounded-full font-semibold hover:scale-105 transition">
+
+        <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+          <Link to="/reservation"
+             className="bg-yellow-500 text-black px-8 py-4 rounded-full font-bold hover:scale-105 hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-500/20">
             Réserver un stand
-          </a>
-          <a href="/don"
-             className="border border-white px-6 py-3 rounded-full hover:bg-white hover:text-black transition">
+          </Link>
+          <Link to="/don"
+             className="border-2 border-white/50 px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-[#0B1A3B] transition-all backdrop-blur-sm">
             Faire un don
-          </a>
+          </Link>
         </div>
       </div>
+
+      {/* Styles inline pour l'animation des étincelles */}
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0; transform: translateY(0); }
+          50% { opacity: 0.7; transform: translateY(-20px); }
+        }
+        .animate-fadeInUp {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </section>
   );
 }

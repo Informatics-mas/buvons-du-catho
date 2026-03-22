@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom' // Important !
+// Retrait du BrowserRouter ici car il est déjà dans App.jsx
 import App from './App.jsx'
 import './index.css'
 

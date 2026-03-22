@@ -1,14 +1,17 @@
 import { useState } from "react";
-import confetti from "canvas-confetti"; // L'effet magique
+import confetti from "canvas-confetti";
+// 1. Importation de la Navbar
+import Navbar from "../components/Navbar"; 
 
 export default function Don() {
   const [nom, setNom] = useState("");
+  const [email, setEmail] = useState(""); 
   const [montant, setMontant] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Nouveaux paliers en FCFA
-  const paliers = [1000, 5000, 10000, 15000];
+  const paliers = [1000, 5000, 10000, 25000]; 
 
   const lancerConfetti = () => {
     const duration = 3 * 1000;
@@ -16,18 +19,18 @@ export default function Don() {
 
     (function frame() {
       confetti({
-        particleCount: 3,
+        particleCount: 5,
         angle: 60,
         spread: 55,
-        origin: { x: 0 },
-        colors: ['#FFD700', '#FFFFFF'] 
+        origin: { x: 0, y: 0.8 },
+        colors: ['#EAB308', '#FFFFFF', '#0B1A3B'] 
       });
       confetti({
-        particleCount: 3,
+        particleCount: 5,
         angle: 120,
         spread: 55,
-        origin: { x: 1 },
-        colors: ['#FFD700', '#FFFFFF']
+        origin: { x: 1, y: 0.8 },
+        colors: ['#EAB308', '#FFFFFF', '#0B1A3B']
       });
 
       if (Date.now() < end) {
@@ -36,23 +39,40 @@ export default function Don() {
     }());
   };
 
+  const redirigerWhatsApp = (nomDonneur, montantDon) => {
+    // Nettoyage du numéro (enlève les espaces pour éviter les bugs)
+    const numeroBrut = "2250769458746"; 
+    const message = `Bonjour ! Je suis ${nomDonneur}. Je souhaite faire un don de ${Number(montantDon).toLocaleString()} FCFA pour soutenir votre activité "Buvons du Catho" 🙏.`;
+    const whatsappUrl = `https://wa.me/${numeroBrut}?text=${encodeURIComponent(message)}`;
+    
+    setTimeout(() => {
+      window.open(whatsappUrl, "_blank");
+    }, 2500);
+  };
+
   const envoyerDon = async (e) => {
     e.preventDefault();
+    if (montant <= 0) return alert("Le montant doit être supérieur à 0");
+    
     setLoading(true);
+    setErrorMessage("");
 
     try {
-      const response = await fetch("https://buvons-du-catho.onrender.com/api/dons", {
+      const res = await fetch("http://localhost:5000/api/dons", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nom, montant }),
+        body: JSON.stringify({ nom, email, montant: Number(montant) }),
       });
 
-      if (response.ok) {
+      if (res.ok) {
         setIsSubmitted(true);
         lancerConfetti(); 
+        redirigerWhatsApp(nom, montant);
+      } else {
+        setErrorMessage("Impossible d'enregistrer le don. Réessayez bientôt !");
       }
     } catch (error) {
-      console.error("Erreur:", error);
+      setErrorMessage("Erreur de connexion au serveur.");
     } finally {
       setLoading(false);
     }
@@ -60,89 +80,121 @@ export default function Don() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-[#0B1A3B] flex items-center justify-center p-6">
-        <div className="bg-white p-10 rounded-2xl shadow-2xl text-center max-w-lg">
-          <div className="text-6xl mb-4">✨</div>
-          <h2 className="text-3xl font-bold text-[#0B1A3B] mb-2">Grand merci, {nom} !</h2>
-          <p className="text-gray-600 text-lg mb-6">
-            Votre générosité de <span className="font-bold text-cathoGold">{Number(montant).toLocaleString()} FCFA</span> est bien reçue.
-          </p>
-          <button 
-            onClick={() => window.location.href = "/"}
-            className="bg-[#0B1A3B] text-white px-8 py-3 rounded-full font-bold hover:bg-cathoGold hover:text-black transition-all"
-          >
-            Retour à la communauté
-          </button>
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-[#0B1A3B] flex items-center justify-center p-6 text-center">
+          <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-lg animate-fadeIn">
+            <div className="text-7xl mb-6">✨</div>
+            <h2 className="text-3xl font-bold text-[#0B1A3B] mb-2">Presque fini, {nom} !</h2>
+            <p className="text-gray-600 text-lg mb-8">
+              Votre intention de don de <span className="font-bold text-yellow-600 text-2xl">{Number(montant).toLocaleString()} FCFA</span> a été enregistrée.
+            </p>
+            <div className="bg-yellow-100 text-yellow-800 p-4 rounded-xl mb-8 flex items-center justify-center gap-3">
+              <span className="animate-pulse text-lg">🚀</span> 
+              <span>Redirection vers WhatsApp pour finaliser le paiement...</span>
+            </div>
+            <button 
+              onClick={() => window.location.href = "/"}
+              className="text-gray-400 hover:text-[#0B1A3B] transition-colors"
+            >
+              Retourner à l'accueil
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0B1A3B] text-white flex flex-col items-center py-20 px-6">
-      <div className="max-w-4xl w-full grid md:grid-cols-2 gap-12 items-center">
-        
-        <div>
-          <h1 className="text-5xl font-bold text-cathoGold mb-6 leading-tight">
-            Un geste pour <br /> la Fraternité
-          </h1>
-          <p className="text-gray-300 text-xl leading-relaxed">
-            Votre soutien permet au festival de grandir et de rester accessible à tous.
-          </p>
-          <div className="mt-8 p-4 border-l-4 border-cathoGold bg-white/5 italic text-gray-400">
-            "Donnez, et l'on vous donnera."
-          </div>
-        </div>
+    <>
+      {/* 2. Ajout de la Navbar ici */}
+      <Navbar />
 
-        <div className="bg-white/5 p-8 rounded-3xl border border-white/10 backdrop-blur-md shadow-2xl">
-          <form onSubmit={envoyerDon} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-cathoGold">Prénom / Pseudo</label>
-              <input
-                type="text"
-                value={nom}
-                onChange={(e) => setNom(e.target.value)}
-                className="w-full p-4 rounded-xl bg-[#0B1A3B] border border-white/20 text-white focus:border-cathoGold outline-none transition"
-                required
-              />
+      <div className="min-h-screen bg-[#0B1A3B] text-white flex flex-col items-center py-24 px-6">
+        <div className="max-w-5xl w-full grid md:grid-cols-2 gap-16 items-center">
+          
+          <div className="space-y-8">
+            <h1 className="text-5xl md:text-6xl font-bold text-yellow-500 leading-tight">
+              Soutenez la <br /> Mission ❤️
+            </h1>
+            <p className="text-gray-300 text-xl leading-relaxed max-w-md">
+              Chaque contribution, petite ou grande, nous aide à faire de ce festival un moment de grâce inoubliable pour tous. 🎉
+            </p>
+            <div className="p-6 border-l-4 border-yellow-500 bg-white/5 rounded-r-2xl italic text-gray-200 text-lg">
+              "Chacun doit donner comme il a décidé dans son cœur, sans regret ni contrainte."
+              <p className="not-italic font-bold text-yellow-500 text-sm mt-2">— 2 Corinthiens 9:7</p>
             </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2 text-cathoGold">Montant du don (FCFA)</label>
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {paliers.map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setMontant(p)}
-                    className={`p-3 rounded-lg border border-cathoGold/30 text-sm transition ${montant == p ? 'bg-cathoGold text-black font-bold' : 'hover:bg-cathoGold/10'}`}
-                  >
-                    {p.toLocaleString()} FCFA
-                  </button>
-                ))}
+          <div className="bg-white/5 p-8 md:p-10 rounded-[2rem] border border-white/10 backdrop-blur-xl shadow-2xl relative">
+            {errorMessage && (
+              <div className="absolute -top-12 left-0 right-0 bg-red-500 text-white text-sm p-3 rounded-xl text-center animate-pulse shadow-lg">
+                ❌ {errorMessage}
               </div>
-              <div className="relative">
+            )}
+
+            <form onSubmit={envoyerDon} className="space-y-8">
+              <div>
+                <label className="block text-sm font-semibold mb-3 text-yellow-500 uppercase tracking-wider">Votre Nom ou Pseudo</label>
                 <input
-                  type="number"
-                  placeholder="Autre montant"
-                  value={montant}
-                  onChange={(e) => setMontant(e.target.value)}
-                  className="w-full p-4 rounded-xl bg-[#0B1A3B] border border-white/20 text-white focus:border-cathoGold outline-none"
+                  type="text"
+                  placeholder="Ex: Frère Jean-Baptiste"
+                  value={nom}
+                  onChange={(e) => setNom(e.target.value)}
+                  className="w-full p-4 rounded-xl bg-[#0B1A3B]/50 border border-white/10 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-all"
                   required
                 />
-                <span className="absolute right-4 top-4 text-gray-500 font-bold">FCFA</span>
               </div>
-            </div>
 
-            <button
-              disabled={loading || !montant}
-              className="w-full bg-cathoGold text-black py-4 rounded-xl font-bold text-lg hover:scale-[1.02] active:scale-95 transition shadow-[0_0_20px_rgba(212,175,55,0.3)] disabled:opacity-50"
-            >
-              {loading ? "Chargement..." : "Offrir avec joie ❤️"}
-            </button>
-          </form>
+              <div>
+                <label className="block text-sm font-semibold mb-3 text-yellow-500 uppercase tracking-wider">Votre Adresse Email</label>
+                <input
+                  type="email"
+                  placeholder="Ex: jean.baptiste@catho.ci"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full p-4 rounded-xl bg-[#0B1A3B]/50 border border-white/10 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 outline-none transition-all"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-3 text-yellow-500 uppercase tracking-wider">Montant du don</label>
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  {paliers.map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setMontant(p)}
+                      className={`py-3 rounded-xl border transition-all duration-300 ${montant == p ? 'bg-yellow-500 border-yellow-500 text-black font-bold shadow-lg shadow-yellow-500/20' : 'border-white/10 hover:border-yellow-500/50 hover:bg-white/5'}`}
+                    >
+                      {p.toLocaleString()} FCFA
+                    </button>
+                  ))}
+                </div>
+                <div className="relative group">
+                  <input
+                    type="number"
+                    placeholder="Montant libre"
+                    value={montant}
+                    onChange={(e) => setMontant(e.target.value)}
+                    className="w-full p-5 rounded-xl bg-[#0B1A3B]/50 border border-white/10 text-white focus:border-yellow-500 outline-none transition-all pr-20 text-xl font-bold"
+                    required
+                  />
+                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 font-bold">FCFA</span>
+                </div>
+              </div>
+
+              <button
+                disabled={loading || !montant || montant <= 0}
+                className="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-xl hover:bg-yellow-400 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-yellow-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                {loading ? "Traitement en cours... ⏳" : "Confirmer mon Don ✨"}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -4,50 +4,74 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-
-// 🔓 PUBLIC — voir les types disponibles
+// 🔓 PUBLIC — Voir les types disponibles (Pour que les gens sachent quoi réserver)
 router.get("/", async (req, res) => {
-  const stands = await StandType.find();
-  res.json(stands);
+  try {
+    const stands = await StandType.find().sort({ prix: 1 }); // Trié du moins cher au plus cher
+    res.json(stands);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la récupération des types de stands" });
+  }
 });
 
-
-// 🔐 ADMIN — créer type
+// 🔐 ADMIN — Créer un nouveau type de stand
 router.post("/", protect, async (req, res) => {
-  const { nom, description, prix, totalDisponible } = req.body;
+  try {
+    const { nom, description, prix, totalDisponible } = req.body;
 
-  const stand = new StandType({
-    nom,
-    description,
-    prix,
-    totalDisponible,
-  });
+    if (!nom || prix === undefined || totalDisponible === undefined) {
+      return res.status(400).json({ message: "Le nom, le prix et la quantité sont obligatoires." });
+    }
 
-  await stand.save();
-  res.status(201).json(stand);
+    const stand = new StandType({
+      nom,
+      description,
+      prix,
+      totalDisponible,
+    });
+
+    const savedStand = await stand.save();
+    res.status(201).json({ message: "Type de stand créé !", stand: savedStand });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ message: "Ce nom de stand existe déjà." });
+    }
+    res.status(500).json({ message: "Erreur serveur lors de la création", error: error.message });
+  }
 });
 
-
-// 🔐 ADMIN — modifier
+// 🔐 ADMIN — Modifier un type de stand
 router.put("/:id", protect, async (req, res) => {
-  const stand = await StandType.findById(req.params.id);
+  try {
+    const standModifie = await StandType.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true, runValidators: true } // "new" renvoie l'objet après modif, "runValidators" vérifie les types
+    );
 
-  if (!stand) return res.status(404).json({ message: "Stand introuvable" });
+    if (!standModifie) {
+      return res.status(404).json({ message: "Type de stand introuvable" });
+    }
 
-  stand.nom = req.body.nom || stand.nom;
-  stand.description = req.body.description || stand.description;
-  stand.prix = req.body.prix || stand.prix;
-  stand.totalDisponible = req.body.totalDisponible || stand.totalDisponible;
-
-  await stand.save();
-  res.json(stand);
+    res.json({ message: "Type de stand mis à jour ✅", stand: standModifie });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la modification", error: error.message });
+  }
 });
 
-
-// 🔐 ADMIN — supprimer
+// 🔐 ADMIN — Supprimer un type de stand
 router.delete("/:id", protect, async (req, res) => {
-  await StandType.findByIdAndDelete(req.params.id);
-  res.json({ message: "Stand supprimé" });
+  try {
+    const standSupprime = await StandType.findByIdAndDelete(req.params.id);
+    
+    if (!standSupprime) {
+      return res.status(404).json({ message: "Type de stand introuvable" });
+    }
+
+    res.json({ message: "Type de stand supprimé avec succès." });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la suppression", error: error.message });
+  }
 });
 
 export default router;
