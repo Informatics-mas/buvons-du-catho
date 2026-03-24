@@ -10,12 +10,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-// --- CONFIGURATION BREVO ---
-const defaultClient = SibApiV3Sdk.ApiClient.instance;
-const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = process.env.BREVO_API_KEY;
-
+// --- CONFIGURATION BREVO (SANS .instance) ---
 const apiInstanceTransactional = new SibApiV3Sdk.TransactionalEmailsApi();
+
+// On configure la clé API directement sur l'instance de l'API
+apiInstanceTransactional.setApiKey(
+  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, 
+  process.env.BREVO_API_KEY
+);
 
 console.log("DEBUG BREVO - SENDER :", process.env.EMAIL_USER);
 
