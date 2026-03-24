@@ -1,13 +1,13 @@
 import express from "express";
 import Reservation from "../models/reservation.js";
-import StandType from "../models/standType.js"; // 👈 On utilise des minuscules pour Linux/Render
+import StandType from "../models/StandType.js"; // 👈 On utilise StandType
 import { protect } from "../middleware/authMiddleware.js";
 import { sendValidationEmail, sendRefusEmail, sendConfirmationEmail } from "../utils/sendEmail.js";
 import ExcelJS from "exceljs";
 
 const router = express.Router();
 
-// --- PUBLIC — Création réservation ---
+//  PUBLIC — Création réservation
 router.post("/", async (req, res) => {
   try {
     const { nom, numero, email, produit, nombreStands, nomStructure, nomResponsable, motivation } = req.body;
@@ -63,11 +63,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-// --- ADMIN — Voir toutes les réservations ---
+// ... reste des routes (pense à changer ProduitStand par StandType dans le PUT /valider)
+
+// ADMIN — Voir toutes les réservations (Protégé)
 router.get("/", protect, async (req, res) => {
   try {
     const reservations = await Reservation.find()
-      .populate("produit") // Remplit les détails du StandType via son ID
+      .populate("produit")
       .sort({ createdAt: -1 });
     res.json(reservations);
   } catch (error) {
@@ -75,7 +77,7 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// --- 📥 ADMIN — Exporter en Excel ---
+// 📥 ADMIN — Exporter en Excel (Protégé)
 router.get("/export", protect, async (req, res) => {
   try {
     const reservations = await Reservation.find().populate("produit");
@@ -83,35 +85,31 @@ router.get("/export", protect, async (req, res) => {
     const sheet = workbook.addWorksheet("Reservations");
 
     sheet.columns = [
-      { header: "Responsable", key: "nom", width: 25 },
-      { header: "Structure", key: "structure", width: 25 },
+      { header: "Nom", key: "nom", width: 20 },
       { header: "Numéro", key: "numero", width: 15 },
       { header: "Email", key: "email", width: 25 },
-      { header: "Type Stand", key: "type", width: 20 },
-      { header: "Stands", key: "nb", width: 10 },
-      { header: "Montant (FCFA)", key: "montant", width: 20 },
-      { header: "Motivation", key: "motivation", width: 40 },
+      { header: "Produit", key: "produit", width: 20 },
+      { header: "Stands", key: "stands", width: 10 },
+      { header: "Montant Total (FCFA)", key: "montant", width: 20 }, // Nouvelle colonne
       { header: "Statut", key: "statut", width: 12 },
       { header: "Emplacement", key: "emplacement", width: 15 }
     ];
 
     reservations.forEach(r => {
       sheet.addRow({
-        nom: r.nomResponsable,
-        structure: r.nomStructure,
+        nom: r.nom,
         numero: r.numero,
         email: r.email,
-        type: r.produit?.nom || r.typeStand,
-        nb: r.nombreStands,
-        montant: r.montantTotal || 0,
-        motivation: r.motivation || "N/A",
+        produit: r.produit?.nom || "N/A",
+        stands: r.nombreStands,
+        montant: r.montantTotal || 0, // Ajout de la valeur
         statut: r.statut,
         emplacement: r.emplacement || "Non assigné"
       });
     });
 
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", "attachment; filename=reservations-buvons-du-catho.xlsx");
+    res.setHeader("Content-Disposition", "attachment; filename=reservations.xlsx");
 
     await workbook.xlsx.write(res);
     res.end();
@@ -120,7 +118,7 @@ router.get("/export", protect, async (req, res) => {
   }
 });
 
-// --- 🔐 ADMIN — Valider et Assigner Emplacement ---
+// 🔐 ADMIN — Valider et Assigner Emplacement
 router.put("/valider/:id", protect, async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id).populate("produit");
@@ -128,32 +126,54 @@ router.put("/valider/:id", protect, async (req, res) => {
     if (reservation.statut === "valide") return res.status(400).json({ message: "Déjà validée" });
 
     const produit = await StandType.findById(reservation.produit._id);
-    if (!produit || produit.totalDisponible < reservation.nombreStands) {
-      return res.status(400).json({ message: "Stock insuffisant pour valider." });
+    if (produit.totalDisponible < reservation.nombreStands) {
+      return res.status(400).json({ message: "Stock insuffisant pour valider cette commande." });
     }
 
-    // Attribution automatique simple de l'emplacement (Stand-01, 02...)
-    const lastRes = await Reservation.findOne({ emplacement: { $regex: /^Stand-/ } }).sort({ emplacement: -1 });
-    let nextNum = 1;
-    if (lastRes && lastRes.emplacement) {
-      const currentNum = parseInt(lastRes.emplacement.split("-")[1]);
-      nextNum = currentNum + 1;
+    // Attribution automatique de l'emplacement
+    const lastReservation = await Reservation.findOne({ emplacement: { $exists: true, $ne: "Non assigné" } }).sort({ emplacement: -1 });
+    let newNumber = 1;
+    if (lastReservation && lastReservation.emplacement) {
+      const parts = lastReservation.emplacement.split("-");
+      newNumber = parseInt(parts[1]) + 1;
     }
-    
-    reservation.emplacement = `Stand-${String(nextNum).padStart(2, "0")}`;
-    reservation.statut = "valide";
+    reservation.emplacement = `Stand-${String(newNumber).padStart(2, "0")}`;
+
+    // Mise à jour du stock et du statut
     produit.totalDisponible -= reservation.nombreStands;
+    reservation.statut = "valide";
 
     await produit.save();
     await reservation.save();
 
-    // Notification Email
-    sendValidationEmail(reservation, produit).catch(e => console.log("Email validation échoué"));
+    // Envoi de l'email
+    try {
+        await sendValidationEmail(reservation, produit);
+    } catch (mailErr) {
+        console.error("Email non envoyé.");
+    }
 
-    res.json({ success: true, message: "Réservation validée et emplacement assigné !", reservation });
+    res.json({ message: "Réservation validée.", reservation });
 
   } catch (error) {
-    res.status(500).json({ message: "Erreur validation", error: error.message });
+    res.status(500).json({ message: "Erreur lors de la validation", error: error.message });
+  }
+});
+
+// 🔐 ADMIN — Refuser
+router.put("/refuser/:id", protect, async (req, res) => {
+  try {
+    const reservation = await Reservation.findById(req.params.id);
+    if (!reservation) return res.status(404).json({ message: "Réservation introuvable" });
+
+    reservation.statut = "refuse";
+    await reservation.save();
+
+    await sendRefusEmail(reservation);
+
+    res.json({ message: "Réservation refusée et email envoyé." });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors du refus" });
   }
 });
 
