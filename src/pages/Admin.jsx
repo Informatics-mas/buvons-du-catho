@@ -1,7 +1,3 @@
-import ImageManager from "../components/admin/ImageManager";
-import ReservationManager from "../components/admin/ReservationManager";
-import StandTypeManager from "../components/admin/standTypeManager";
-import DonManager from "../components/admin/DonsManager";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
@@ -15,8 +11,15 @@ import {
   Title
 } from "chart.js";
 import * as XLSX from 'xlsx';
+import { io } from "socket.io-client";
 
-// Enregistrement des composants Chart.js
+// Import de tes managers
+import ImageManager from "../components/admin/ImageManager";
+import ReservationManager from "../components/admin/ReservationManager";
+import StandTypeManager from "../components/admin/standTypeManager";
+import DonManager from "../components/admin/DonsManager";
+
+// Enregistrement Chart.js
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title);
 
 export default function Admin() {
@@ -24,67 +27,45 @@ export default function Admin() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // --- LOGIQUE SOCKET.IO (À l'intérieur du composant) ---
+  useEffect(() => {
+  const socket = io("https://buvons-du-catho.onrender.com");
+
+  // --- ÉCOUTE DES DONS ---
+  socket.on("nouveauDon", (nouveauDon) => {
+      setStats((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          totalDons: prev.totalDons + 1,
+          totalMontant: prev.totalMontant + nouveauDon.montant,
+          detailsDons: [nouveauDon, ...(prev.detailsDons || [])]
+        };
+      });
+      new Audio("/notification.mp3").play().catch(() => {});
+    });
+
+    // --- 🆕 ÉCOUTE DES RÉSERVATIONS ---
+    socket.on("nouvelleReservation", (data) => {
+      setStats((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          totalReservations: prev.totalReservations + 1,
+          detailsReservations: [data, ...(prev.detailsReservations || [])]
+        };
+      });
+    });
+
+    return () => socket.disconnect();
+  }, []);
+
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
   };
 
-  // --- FONCTION EXPORT EXCEL ---
-  const exporterDonnees = () => {
-    if (!stats) return alert("Aucune donnée à exporter.");
-
-    // Note : On utilise ici les données brutes que ton backend doit renvoyer dans l'objet stats
-    const feuilleDons = (stats.detailsDons || []).map(d => ({
-      Nom: d.nom,
-      Email: d.email,
-      Montant: d.montant,
-      Devise: "FCFA",
-      Date: new Date(d.createdAt).toLocaleDateString('fr-FR')
-    }));
-
-    const feuilleReservations = (stats.detailsReservations || []).map(r => ({
-      Exposant: r.nomResponsable,
-      Structure: r.nomStructure,
-      Telephone: r.telephone,
-      Type_Stand: r.typeStand,
-      Motivation: r.motivation,
-      Statut: r.paye ? "Payé" : "En attente"
-    }));
-
-    const wb = XLSX.utils.book_new();
-    const wsDons = XLSX.utils.json_to_sheet(feuilleDons);
-    const wsResa = XLSX.utils.json_to_sheet(feuilleReservations);
-
-    XLSX.utils.book_append_sheet(wb, wsDons, "Dons");
-    XLSX.utils.book_append_sheet(wb, wsResa, "Reservations");
-
-    XLSX.writeFile(wb, `BuvonsDuCatho_Bilan_${new Date().getFullYear()}.xlsx`);
-  };
-
-  // --- FONCTION RESET ---
-  const handleReset = async () => {
-    const confirmReset = window.confirm(
-      "⚠️ ATTENTION : Voulez-vous vraiment TOUT effacer (Dons et Réservations) pour la nouvelle édition ?"
-    );
-
-    if (confirmReset) {
-      const token = localStorage.getItem("adminToken");
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/reset-edition`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (res.ok) {
-          alert("Base de données réinitialisée ! ✨");
-          window.location.reload();
-        }
-      } catch (error) {
-        alert("Erreur lors de la réinitialisation.");
-      }
-    }
-  };
-
+  // --- FETCH DES STATS INITIALES ---
   useEffect(() => {
     const fetchStats = async () => {
       const token = localStorage.getItem("adminToken");
@@ -112,14 +93,56 @@ export default function Admin() {
     fetchStats();
   }, []);
 
+  // --- EXPORT EXCEL ---
+  const exporterDonnees = () => {
+    if (!stats) return alert("Aucune donnée à exporter.");
+
+    const feuilleDons = (stats.detailsDons || []).map(d => ({
+      Nom: d.nom,
+      Numero: d.numero,
+      Montant: d.montant,
+      Date: new Date(d.createdAt).toLocaleString('fr-FR')
+    }));
+
+    const feuilleReservations = (stats.detailsReservations || []).map(r => ({
+      Exposant: r.nomResponsable,
+      Structure: r.nomStructure,
+      Type_Stand: r.typeStand,
+      Motivation: r.motivation,
+      Statut: r.statut
+    }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(feuilleDons), "Dons");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(feuilleReservations), "Reservations");
+    XLSX.writeFile(wb, `Bilan_BuvonsDuCatho_${new Date().getFullYear()}.xlsx`);
+  };
+
+  const handleReset = async () => {
+    if (window.confirm("⚠️ IRREVERSIBLE : Voulez-vous vraiment TOUT effacer ?")) {
+      const token = localStorage.getItem("adminToken");
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/reset-edition`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          alert("Base de données réinitialisée ! ✨");
+          window.location.reload();
+        }
+      } catch (error) {
+        alert("Erreur lors du reset.");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0B1A3B] text-white p-6 md:p-10">
-      
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4 border-b border-white/10 pb-6">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-yellow-500">🔐 Dashboard</h1>
-          <p className="text-gray-400 mt-1">Informatics Admin System v1.0</p>
+          <p className="text-gray-400 mt-1">Informatics Admin System v1.1 - Direct Mode</p>
         </div>
         <button onClick={handleLogout} className="bg-red-600/20 text-red-400 border border-red-600/50 px-6 py-2 rounded-full hover:bg-red-600 hover:text-white transition-all">
           Déconnexion
@@ -127,7 +150,9 @@ export default function Admin() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-yellow-500"></div></div>
+        <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-yellow-500"></div>
+        </div>
       ) : stats && (
         <>
           {/* CARDS */}
@@ -138,7 +163,7 @@ export default function Admin() {
               { label: "Dons", value: stats.totalDons, color: "text-green-400" },
               { label: "Total Récolté", value: `${(stats.totalMontant || 0).toLocaleString()} FCFA`, color: "text-emerald-400" }
             ].map((stat, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 p-6 rounded-2xl shadow-xl">
+              <div key={i} className="bg-white/5 border border-white/10 p-6 rounded-2xl shadow-xl transition-transform hover:scale-105">
                 <h3 className="text-gray-400 text-sm uppercase">{stat.label}</h3>
                 <p className={`text-2xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
               </div>
@@ -151,12 +176,16 @@ export default function Admin() {
               data={{
                 labels: ["Réservations", "Dons", "Images"],
                 datasets: [{
-                  label: "Activité",
+                  label: "Activité Globale",
                   data: [stats.totalReservations, stats.totalDons, stats.totalImages],
                   backgroundColor: ["#EAB308", "#22C55E", "#3B82F6"],
                 }]
               }}
-              options={{ responsive: true, maintainAspectRatio: false }}
+              options={{ 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+              }}
             />
           </div>
         </>
@@ -170,16 +199,15 @@ export default function Admin() {
         <DonManager />
       </div>
       
-      {/* ZONE DANGER / EXPORT */}
-      <div className="bg-white/5 p-8 rounded-3xl border border-red-500/20 mt-12 mb-10">
-        <h3 className="text-2xl font-bold text-yellow-500 mb-4">Fin d'Édition</h3>
-        <p className="text-gray-400 mb-6">Action irréversible. Téléchargez toujours le bilan avant de réinitialiser.</p>
+      {/* DANGER ZONE */}
+      <div className="bg-red-900/10 p-8 rounded-3xl border border-red-500/20 mt-12 mb-10">
+        <h3 className="text-2xl font-bold text-red-500 mb-4">Actions Critique</h3>
         <div className="flex flex-wrap gap-4">
           <button onClick={exporterDonnees} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl transition-all">
-            📥 Exporter le Bilan (Excel)
+            📥 Télécharger Bilan Excel
           </button>
-          <button onClick={handleReset} className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl transition-all">
-            🗑️ Réinitialiser l'Édition
+          <button onClick={handleReset} className="bg-transparent border border-red-600 text-red-500 hover:bg-red-600 hover:text-white font-bold py-3 px-8 rounded-xl transition-all">
+            🗑️ Reset l'Édition
           </button>
         </div>
       </div>

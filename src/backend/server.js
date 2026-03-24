@@ -4,13 +4,40 @@ import mongoose from "mongoose";
 import cors from "cors";
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { Server } from "socket.io";
+import http from "http";
 
+// --- CONFIGURATION DES CHEMINS ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// --- CONFIGURATION ---
-dotenv.config({ path: path.join(__dirname, '.env') });
+// 1. Initialisation de Express
 const app = express();
+
+// 2. Chargement du .env (Doit être fait très tôt)
+dotenv.config({ path: path.join(__dirname, '.env') });
+
+// 3. Création du serveur HTTP avec l'app Express
+const server = http.createServer(app);
+
+// 4. Initialisation de Socket.io avec le serveur HTTP
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST"]
+  }
+});
+
+// Rendre 'io' accessible dans toutes les routes via req.app.get("socketio")
+app.set("socketio", io);
+
+io.on("connection", (socket) => {
+  console.log("Admin connecté au flux direct ⚡ ID:", socket.id);
+  
+  socket.on("disconnect", () => {
+    console.log("Un admin s'est déconnecté 🔌");
+  });
+});
 
 // --- IMPORTS DES ROUTES ---
 import authRoutes from "./routes/authRoutes.js";
@@ -21,14 +48,11 @@ import donroutes from "./routes/donroutes.js";
 import standTypeRoutes from "./routes/standTypeRoutes.js";
 
 // --- MIDDLEWARES ---
-
-// Liste des origines autorisées
 const allowedOrigins = process.env.FRONTEND_URL;
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Permet les requêtes sans origine (comme Postman ou mobiles)
-   if (!origin || origin === allowedOrigins) {
+    if (!origin || origin === allowedOrigins || origin.includes("localhost")) {
       callback(null, true);
     } else {
       callback(new Error('Bloqué par la politique CORS de Informatics'));
@@ -36,10 +60,9 @@ app.use(cors({
   },
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Rendre le dossier des images public
 app.use('/uploads', express.static(path.join(path.resolve(), 'uploads')));
 
 // --- CONNEXION MONGODB ---
@@ -49,7 +72,7 @@ const connectDB = async () => {
     console.log("MongoDB connecté avec succès ✅");
   } catch (err) {
     console.error("Erreur de connexion MongoDB ❌ :", err.message);
-    process.exit(1); // Arrête le serveur si la DB n'est pas connectée
+    process.exit(1);
   }
 };
 connectDB();
@@ -63,47 +86,40 @@ app.use("/api/stand-types", standTypeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 // --- ROUTES ADMINISTRATIVES SPÉCIALES ---
-// On utilise 'app' ici au lieu de 'router' et on importe les modèles nécessaires
 import Don from "./models/don.js";
 import Reservation from "./models/reservation.js";
-import StandType from "./models/StandType.js";
-import { protect } from "./middleware/authMiddleware.js"; // Utilise ton middleware de protection
+import StandType from "./models/standType.js"; // Attention à la casse
+import { protect } from "./middleware/authMiddleware.js";
 
 app.post("/api/admin/reset-edition", protect, async (req, res) => {
   try {
-    // 1. Supprimer toutes les réservations et les dons
     await Promise.all([
       Reservation.deleteMany({}),
       Don.deleteMany({})
     ]);
 
-    // 2. Remettre les compteurs de stands à leur capacité initiale
     const stands = await StandType.find({});
     for (let stand of stands) {
-      // Si tu n'as pas de champ capaciteTotale, on peut mettre une valeur par défaut (ex: 10)
-      stand.quantite = stand.capaciteTotale || 10; 
+      stand.totalDisponible = stand.capaciteTotale || 10; 
       await stand.save();
     }
 
-    res.json({ success: true, message: "L'édition a été réinitialisée avec succès ! 🚀" });
+    res.json({ success: true, message: "L'édition a été réinitialisée ! 🚀" });
   } catch (error) {
-    console.error("Erreur Reset:", error);
-    res.status(500).json({ success: false, message: "Erreur lors de la réinitialisation." });
+    res.status(500).json({ success: false, message: "Erreur lors du reset." });
   }
 });
 
-// --- ROUTE DE TEST & ACCUEIL ---
 app.get("/", (req, res) => {
-  res.send("🚀 API Buvons du Catho est en ligne et fonctionnelle !");
+  res.send("🚀 API Buvons du Catho en DIRECT est opérationnelle !");
 });
 
-// --- GESTION DES ERREURS 404 ---
 app.use((req, res) => {
-  res.status(404).json({ message: "Route introuvable sur le serveur." });
+  res.status(404).json({ message: "Route introuvable." });
 });
 
-// --- DÉMARRAGE DU SERVEUR ---
+// --- DÉMARRAGE DU SERVEUR (Utiliser 'server.listen' et non 'app.listen') ---
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Serveur démarré sur le port ${PORT} 🚀`);
+server.listen(PORT, () => {
+  console.log(`Serveur Informatics en direct sur le port ${PORT} 🚀`);
 });
