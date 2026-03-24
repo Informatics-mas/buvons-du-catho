@@ -1,4 +1,4 @@
-import apiInstance from "@getbrevo/brevo";
+import * as SibApiV3Sdk from "@getbrevo/brevo";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from 'url';
@@ -10,17 +10,17 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // Configuration du client Brevo
-const defaultClient = apiInstance.ApiClient.instance;
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
 apiKey.apiKey = process.env.BREVO_API_KEY; 
 
-const apiInstanceTransactional = new apiInstance.TransactionalEmailsApi();
+const apiInstanceTransactional = new SibApiV3Sdk.TransactionalEmailsApi();
 
 console.log("DEBUG BREVO - SENDER :", process.env.EMAIL_USER);
 
 // --- 1. EMAIL DE VALIDATION ---
 export const sendValidationEmail = async (reservation, produit) => {
-  const sendSmtpEmail = new apiInstance.SendSmtpEmail();
+  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 
   sendSmtpEmail.subject = "Confirmation : Votre stand est validé ! 🎉";
   sendSmtpEmail.sender = { "name": "Buvons du Catho", "email": process.env.EMAIL_USER };
@@ -53,7 +53,7 @@ export const sendValidationEmail = async (reservation, produit) => {
 
 // --- 2. EMAIL DE REFUS ---
 export const sendRefusEmail = async (reservation) => {
-  const sendSmtpEmail = new apiInstance.SendSmtpEmail();
+  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 
   sendSmtpEmail.subject = "Information concernant votre demande de stand";
   sendSmtpEmail.sender = { "name": "Buvons du Catho", "email": process.env.EMAIL_USER };
@@ -79,7 +79,7 @@ export const sendRefusEmail = async (reservation) => {
 
 // --- 3. EMAIL DE CONFIRMATION (RECEPTION) ---
 export const sendConfirmationEmail = async (destinataire, nomExposant, typeStand) => {
-  const sendSmtpEmail = new apiInstance.SendSmtpEmail();
+  const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
 
   sendSmtpEmail.subject = "Confirmation de votre demande de stand - Buvons du Catho";
   sendSmtpEmail.sender = { "name": "Buvons du Catho", "email": process.env.EMAIL_USER };
