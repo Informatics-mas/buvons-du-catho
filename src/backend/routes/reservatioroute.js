@@ -30,6 +30,7 @@ router.post("/", async (req, res) => {
 
     // 4. Création de la réservation unique
     const reservation = new Reservation({
+      nom: nomResponsable || nom,
       nomResponsable: nomResponsable || nom,
       nomStructure,
       numero,
