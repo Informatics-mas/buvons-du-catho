@@ -1,7 +1,7 @@
 import express from "express";
 import Image from "../models/image.js";
 import { protect } from "../middleware/authMiddleware.js";
-import { uploadCloudinary } from '../utils/cloudinaryConfig.js';
+import { uploadCloudinary } from '../utils/cloudinaryconfig.js';
 import { v2 as cloudinary } from 'cloudinary'; // Import pour la suppression
 
 const router = express.Router();
