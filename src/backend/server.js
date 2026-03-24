@@ -88,7 +88,7 @@ app.use("/api/dashboard", dashboardRoutes);
 // --- ROUTES ADMINISTRATIVES SPÉCIALES ---
 import Don from "./models/don.js";
 import Reservation from "./models/reservation.js";
-import StandType from "./models/standType.js"; // Attention à la casse
+import StandType from "./models/StandType.js"; // Attention à la casse
 import { protect } from "./middleware/authMiddleware.js";
 
 app.post("/api/admin/reset-edition", protect, async (req, res) => {
