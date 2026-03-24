@@ -66,7 +66,7 @@ export default function Don() {
     setErrorMessage("");
 
     try {
-      const res = await fetch("https://buvons-du-catho.onrender.com/api/dons", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/dons`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nom, numero, montant: Number(montant) }),

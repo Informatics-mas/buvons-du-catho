@@ -15,7 +15,7 @@ export default function StandTypeManager() {
   });
 
   // URL du backend (ajuste si nécessaire pour la prod)
-  const API_URL = "https://buvons-du-catho.onrender.com/api/stand-types";
+  const API_URL = `${import.meta.env.VITE_API_URL}/stand-types`;
 
   // 1. Charger les types de stands
   const fetchTypes = async () => {

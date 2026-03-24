@@ -69,7 +69,7 @@ export default function Admin() {
     if (confirmReset) {
       const token = localStorage.getItem("adminToken");
       try {
-        const res = await fetch("https://buvons-du-catho.onrender.com/api/admin/reset-edition", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/reset-edition`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -88,7 +88,7 @@ export default function Admin() {
     const fetchStats = async () => {
       const token = localStorage.getItem("adminToken");
       try {
-        const res = await fetch("https://buvons-du-catho.onrender.com/api/dashboard/stats", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

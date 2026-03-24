@@ -7,12 +7,12 @@ import ExcelJS from "exceljs";
 
 const router = express.Router();
 
-// 📌 PUBLIC — Création réservation
+//  PUBLIC — Création réservation
 router.post("/", async (req, res) => {
   try {
     const { nom, numero, email, produit, nombreStands } = req.body;
 
-    // 👈 On cherche dans StandType
+    // On cherche dans StandType
     const standChoisi = await StandType.findById(produit);
     if (!standChoisi) {
       return res.status(404).json({ message: "Catégorie de stand introuvable" });
@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
       email,
       produit, // ID du StandType
       nombreStands,
-      montantTotal, // 👈 Enregistré en base
+      montantTotal, //  Enregistré en base
       statut: "en_attente"
     });
 
@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
 
 // ... reste des routes (pense à changer ProduitStand par StandType dans le PUT /valider)
 
-// 📥 ADMIN — Voir toutes les réservations (Protégé)
+// ADMIN — Voir toutes les réservations (Protégé)
 router.get("/", protect, async (req, res) => {
   try {
     const reservations = await Reservation.find()

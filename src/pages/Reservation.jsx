@@ -15,12 +15,10 @@ export default function Reservation() {
     email: "",
     produit: "", 
     nombreStands: 1,
-  });
-
-  const API_BASE_URL = "https://buvons-du-catho.onrender.com/api"; 
+  }); 
 
   useEffect(() => {
-    fetch("https://buvons-du-catho.onrender.com/api/stand-types")
+    fetch(`${import.meta.env.VITE_API_URL}/stand-types`)
       .then((res) => {
         if (!res.ok) throw new Error("Erreur lors du chargement des produits");
         return res.json();
@@ -46,7 +44,7 @@ export default function Reservation() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/reservations`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/reservations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

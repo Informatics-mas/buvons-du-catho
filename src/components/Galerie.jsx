@@ -9,7 +9,7 @@ export default function Galerie() {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const res = await fetch("https://buvons-du-catho.onrender.com/api/images");
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/images`);
         const data = await res.json();
         setImages(data);
       } catch (error) {

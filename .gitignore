@@ -25,5 +25,7 @@ dist-ssr
 
 node_modules/
 .env
+.env.developement
+.env.production
 *.deb
 *.log

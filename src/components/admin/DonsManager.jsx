@@ -9,7 +9,7 @@ export default function DonManager() {
     // 1. Récupérer le token stocké lors du login (souvent dans localStorage)
     const token = localStorage.getItem("adminToken");
 
-    fetch("https://buvons-du-catho.onrender.com/api/dons", {
+    fetch(`${import.meta.env.VITE_API_URL}/dons`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

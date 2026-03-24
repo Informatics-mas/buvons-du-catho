@@ -4,7 +4,7 @@ export default function ReservationManager() {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = "https://buvons-du-catho.onrender.com/api/reservations";
+  const API_URL = `${import.meta.env.VITE_API_URL}/reservations`;
   const token = localStorage.getItem("adminToken"); // Assure-toi que c'est le même nom que dans Login.js
 
   // Utilisation de useCallback pour pouvoir rafraîchir la liste après une action
