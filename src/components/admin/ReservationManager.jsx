@@ -68,6 +68,7 @@ export default function ReservationManager() {
               <th className="py-3 px-2">Produit</th>
               <th className="py-3 px-2">Qté</th>
               <th className="py-3 px-2">Statut / Emplacement</th>
+              <th className="py-3 px-2">Motivation</th>
               <th className="py-3 px-2 text-center">Actions</th>
             </tr>
           </thead>
@@ -98,6 +99,7 @@ export default function ReservationManager() {
                     </div>
                   )}
                 </td>
+                <td className="py-4 px-2 font-bold">{r.motivation}</td>
                 <td className="py-4 px-2 text-center">
                   {r.statut === "en_attente" && (
                     <div className="flex gap-2 justify-center">
