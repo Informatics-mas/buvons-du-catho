@@ -13,19 +13,12 @@ console.log("DEBUG DANS SENDEMAIL - USER :", process.env.EMAIL_USER);
 
 // Configuration du transporteur
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com", // Ou ton hôte actuel
-  port: 587,              // 👈 Change 465 pour 587
-  secure: false,          // 👈 Doit être 'false' pour le port 587
+  service: "gmail", // Utiliser 'service' simplifie la configuration pour Gmail
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    // 👈 Force la connexion à ne pas échouer sur les réseaux restreints
-    rejectUnauthorized: false,
-    // 👈 Optionnel : Force IPv4 si possible
-    servername: "smtp.gmail.com" 
-  }
+  // On retire host/port/secure pour laisser le mode 'service' gérer les meilleurs paramètres
 });
 
 // Vérification de la connexion au démarrage (utile pour le débug sur Render)
