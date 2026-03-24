@@ -144,6 +144,18 @@ export default function Reservation() {
                     <span className="text-2xl font-black text-white">{totalAPayer.toLocaleString()} FCFA</span>
                   </div>
                 )}
+
+                <div>
+                  <label className="text-xs font-bold text-yellow-500 uppercase ml-1">Pourquoi souhaitez-vous participer ? (Motivation)</label>
+                  <textarea 
+                    name="motivation" 
+                    value={form.motivation} 
+                    onChange={handleChange} 
+                    rows="3"
+                    placeholder="Donnez-nous une brève description de ce que vous souhaitez exposer ainsi que votre motivation. (Minimum 10 caractères)"
+                    className="w-full p-4 rounded-xl bg-black/20 border border-white/10 focus:border-yellow-500 outline-none transition-all resize-none"
+                  />
+                </div>
               </div>
 
               <button type="submit" disabled={loading || produits.length === 0} className="md:col-span-2 w-full bg-yellow-500 text-black font-black py-4 rounded-xl hover:bg-yellow-400 hover:scale-[1.01] transition-all shadow-xl disabled:opacity-30 flex justify-center items-center">

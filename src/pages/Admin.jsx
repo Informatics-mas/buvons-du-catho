@@ -47,6 +47,7 @@ export default function Admin() {
       Structure: r.nomStructure,
       Telephone: r.telephone,
       Type_Stand: r.typeStand,
+      Motivation: r.motivation,
       Statut: r.paye ? "Payé" : "En attente"
     }));
 

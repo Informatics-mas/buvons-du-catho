@@ -2,7 +2,7 @@ import express from "express";
 import Reservation from "../models/reservation.js";
 import StandType from "../models/StandType.js"; // 👈 On utilise StandType
 import { protect } from "../middleware/authMiddleware.js";
-import { sendValidationEmail, sendRefusEmail } from "../utils/sendEmail.js";
+import { sendValidationEmail, sendRefusEmail, sendConfirmationEmail } from "../utils/sendEmail.js";
 import ExcelJS from "exceljs";
 
 const router = express.Router();
@@ -23,6 +23,16 @@ router.post("/", async (req, res) => {
         message: `Stock insuffisant. Il ne reste que ${standChoisi.totalDisponible} stand(s).`,
       });
     }
+
+    const nouvelleReservation = new Reservation(req.body);
+    await nouvelleReservation.save();
+
+    // Envoi de l'email de confirmation sans bloquer la réponse client
+    sendConfirmationEmail(
+      nouvelleReservation.email, 
+      nouvelleReservation.nomResponsable, 
+      nouvelleReservation.typeStand
+    ).catch(err => console.error("Erreur envoi email:", err));
 
     // CALCUL DU MONTANT AUTOMATIQUE
     const montantTotal = standChoisi.prix * nombreStands;

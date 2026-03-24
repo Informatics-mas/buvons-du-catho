@@ -83,3 +83,46 @@ export const sendRefusEmail = async (reservation) => {
     console.error("❌ Erreur lors de l'envoi de l'email de refus :", error);
   }
 };
+
+export const sendConfirmationEmail = async (destinataire, nomExposant, typeStand) => {
+  try {
+    const info = await transporter.sendMail({
+      from: `"Buvons du Catho" <${process.env.EMAIL_USER}>`,
+      to: destinataire,
+      subject: "Confirmation de votre demande de stand - Buvons du Catho",
+      html: `
+        <div style="background-color: #0B1A3B; padding: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            
+            <div style="background-color: #EAB308; padding: 30px;">
+              <h1 style="color: #0B1A3B; margin: 0; font-size: 28px; text-transform: uppercase;">Demande Reçue !</h1>
+            </div>
+    
+            <div style="padding: 40px; text-align: left; color: #333333; line-height: 1.6;">
+              <p style="font-size: 18px;">Bonjour <strong>${nomExposant}</strong>,</p>
+              
+              <p>Nous avons bien reçu votre demande de réservation pour un stand lors de la prochaine édition de <strong>Buvons du Catho</strong>.</p>
+              
+              <div style="background-color: #f8f9fa; border-left: 4px solid #EAB308; padding: 20px; margin: 25px 0;">
+                <p style="margin: 0; font-weight: bold; color: #0B1A3B;">Récapitulatif de votre demande :</p>
+                <p style="margin: 5px 0 0 0;">Type de Stand : <span style="color: #EAB308; font-weight: bold;">${typeStand}</span></p>
+              </div>
+    
+              <p>Notre équipe administrative examine actuellement votre demande (ainsi que vos motivations). Nous reviendrons vers vous très rapidement par téléphone ou par email pour valider les prochaines étapes.</p>
+              
+              <p style="margin-top: 30px;">Merci de participer à cette belle aventure évangélique !</p>
+            </div>
+    
+            <div style="background-color: #0B1A3B; padding: 20px; color: #ffffff; font-size: 12px; text-align: center;">
+              <p style="margin: 0;">© 2026 Buvons du Catho - Informatics Project</p>
+              <p style="margin: 5px 0 0 0;">Abidjan, Côte d'Ivoire</p>
+            </div>
+          </div>
+        </div>
+      `,
+    });
+    console.log("✅ Email de confirmation envoyé :", info.messageId);
+  } catch (error) {
+    console.error("❌ Erreur lors de l'envoi de l'email de confirmation :", error);
+  }
+};

@@ -12,6 +12,11 @@ const reservationSchema = new mongoose.Schema(
     },
     nombreStands: { type: Number, required: true, min: 1 },
     montantTotal: { type: Number, default: 0 }, // 👈 AJOUTÉ pour stocker le prix calculé
+    motivation: { 
+    type: String, 
+    required: [true, "La motivation est obligatoire"],
+    minLength: [10, "La motivation doit faire au moins 10 caractères"] // Optionnel : pour avoir du contenu sérieux
+  }, // Optionnel, pour que les exposants puissent expliquer leur projet
     statut: {
       type: String,
       enum: ["en_attente", "valide", "refuse"],
