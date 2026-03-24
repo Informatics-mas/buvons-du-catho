@@ -1,22 +1,21 @@
-import SibApiV3Sdk from "@getbrevo/brevo"; // Import direct
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const SibApiV3Sdk = require('@getbrevo/brevo');
+
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Chargement du .env
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-// --- CONFIGURATION BREVO (Nouvelle méthode compatible Node 22) ---
-const apiInstanceTransactional = new SibApiV3Sdk.TransactionalEmailsApi();
+// --- CONFIGURATION BREVO ---
+const defaultClient = SibApiV3Sdk.ApiClient.instance;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
-// On configure la clé API directement sur l'instance
-apiInstanceTransactional.setApiKey(
-  SibApiV3Sdk.TransactionalEmailsApiApiKeys.apiKey, 
-  process.env.BREVO_API_KEY
-);
+const apiInstanceTransactional = new SibApiV3Sdk.TransactionalEmailsApi();
 
 console.log("DEBUG BREVO - SENDER :", process.env.EMAIL_USER);
 
