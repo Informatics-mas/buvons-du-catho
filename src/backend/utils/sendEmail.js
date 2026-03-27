@@ -8,7 +8,6 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
-// Fonction coeur qui utilise le fetch natif de Node 22
 const callBrevoAPI = async (payload) => {
   try {
     const response = await fetch(BREVO_API_URL, {
@@ -28,7 +27,6 @@ const callBrevoAPI = async (payload) => {
       const errorData = await response.json();
       throw new Error(errorData.message || "Erreur API Brevo");
     }
-    
     return await response.json();
   } catch (error) {
     console.error("❌ Erreur d'envoi via API HTTP :", error.message);
@@ -37,57 +35,73 @@ const callBrevoAPI = async (payload) => {
 
 // --- 1. EMAIL DE VALIDATION ---
 export const sendValidationEmail = async (reservation, produit) => {
+  const nomClient = reservation.nom || "Exposant"; 
+
   await callBrevoAPI({
-    to: [{ email: reservation.email, name: reservation.nomResponsable }],
+    to: [{ email: reservation.email, name: nomClient }],
     subject: "Confirmation : Votre stand est validé ! 🎉",
     htmlContent: `
       <div style="font-family: sans-serif; line-height: 1.6; color: #333; padding: 20px;">
         <h2 style="color: #2e7d32;">Félicitations ! Votre demande de stand a été validée.</h2>
-        <p>Bonjour <strong>${reservation.nomResponsable}</strong>,</p>
+        <p>Bonjour <strong>${nomClient}</strong>,</p>
         <p>Nous avons le plaisir de vous confirmer votre réservation :</p>
         <ul>
-          <li><strong>Produit :</strong> ${produit.nom}</li>
+          <li><strong>Produit :</strong> ${produit?.nom || "Stand"}</li>
           <li><strong>Nombre de stands :</strong> ${reservation.nombreStands}</li>
           <li><strong>Emplacement :</strong> ${reservation.emplacement || "À confirmer"}</li>
         </ul>
-        <p>Veuillez effectuer votre paiement sur ce numéro : <strong>0700000000</strong></p>
+        <p>Veuillez effectuer votre paiement sur ce numéro : <strong>0769458746</strong></p>
         <p>Merci pour votre participation 🙏</p>
       </div>
     `
   });
-  console.log("✅ Email de VALIDATION envoyé via API HTTP");
 };
 
 // --- 2. EMAIL DE REFUS ---
 export const sendRefusEmail = async (reservation) => {
+  const nomClient = reservation.nom || "Exposant";
   await callBrevoAPI({
-    to: [{ email: reservation.email, name: reservation.nomResponsable }],
+    to: [{ email: reservation.email, name: nomClient }],
     subject: "Information concernant votre demande de stand",
     htmlContent: `
       <div style="font-family: sans-serif; line-height: 1.6; color: #333; padding: 20px;">
         <h2>Mise à jour de votre demande</h2>
-        <p>Bonjour ${reservation.nomResponsable},</p>
-        <p>Nous avons bien reçu votre demande pour <strong>Buvons du Catho</strong>.</p>
-        <p>Malheureusement, nous ne pouvons pas l'accepter pour cette édition (stock épuisé ou critères).</p>
-        <p>Merci pour votre compréhension et que Dieu vous bénisse 🙏</p>
+        <p>Bonjour ${nomClient}, votre demande n'a pas pu être acceptée pour cette édition.</p>
+        <p>Merci pour votre compréhension.</p>
       </div>
     `
   });
-  console.log("✅ Email de REFUS envoyé via API HTTP");
 };
 
-// --- 3. EMAIL DE CONFIRMATION (RÉCEPTION) ---
+// --- 3. EMAIL DE CONFIRMATION (AVEC BOUTON WHATSAPP) ---
 export const sendConfirmationEmail = async (destinataire, nomExposant, typeStand) => {
+  const nomAffichage = nomExposant || "Exposant";
+  
+  // Préparation du lien WhatsApp
+  const numeroWhatsApp = "2250769458746";
+  const messageWA = `Bonjour ! Je suis ${nomAffichage}. J'ai effectué une demande de stand (${typeStand}) pour "Buvons du Catho" 🙏.`;
+  const whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(messageWA)}`;
+
   await callBrevoAPI({
-    to: [{ email: destinataire, name: nomExposant }],
-    subject: "Confirmation de votre demande - Buvons du Catho",
+    to: [{ email: destinataire, name: nomAffichage }],
+    subject: "Demande reçue - Buvons du Catho",
     htmlContent: `
-      <div style="background-color: #0B1A3B; padding: 40px; font-family: sans-serif; text-align: center; color: white;">
+      <div style="background-color: #0B1A3B; padding: 40px; font-family: sans-serif; text-align: center; color: white; border-radius: 10px;">
         <h1 style="color: #EAB308;">DEMANDE REÇUE !</h1>
-        <p>Bonjour <strong>${nomExposant}</strong>, votre demande pour un stand <strong>${typeStand}</strong> est en cours de traitement.</p>
-        <p>Nous reviendrons vers vous très prochainement.</p>
+        <p style="font-size: 16px;">Bonjour <strong>${nomAffichage}</strong>,</p>
+        <p>Votre demande pour un stand <strong>${typeStand}</strong> est en cours de traitement.</p>
+        
+        <div style="margin-top: 30px;">
+          <p style="font-size: 14px; color: #cbd5e1;">Pour accélérer le traitement, vous pouvez nous contacter sur WhatsApp :</p>
+          <p>cliquez sur ce <a href="${whatsappUrl}" 
+             style="background-color: #25D366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 10px;">
+            LIEN
+          </a> pour lancer la discussion WhatsApp</p>
+        </div>
+        
+        <p style="margin-top: 40px; font-size: 12px; color: #94a3b8;">L'équipe Buvons du Catho</p>
       </div>
     `
   });
-  console.log("✅ Email de CONFIRMATION envoyé via API HTTP");
+  console.log(`✅ Email de CONFIRMATION envoyé à ${nomAffichage}`);
 };

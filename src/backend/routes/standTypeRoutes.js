@@ -74,4 +74,18 @@ router.delete("/:id", protect, async (req, res) => {
   }
 });
 
+// admin modifier un stand
+router.put("/:id", protect, async (req, res) => {
+  try {
+    const updatedType = await StandType.findByIdAndUpdate(
+      req.params.id, 
+      req.body, 
+      { new: true, runValidators: true }
+    );
+    res.json(updatedType);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 export default router;

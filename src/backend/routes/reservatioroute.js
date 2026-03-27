@@ -181,4 +181,14 @@ router.put("/refuser/:id", protect, async (req, res) => {
   }
 });
 
+// modifier(admin) une réservation
+router.put("/:id", authAdmin, async (req, res) => {
+  try {
+    const updated = await Reservation.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
 export default router;
