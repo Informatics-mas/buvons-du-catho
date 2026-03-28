@@ -75,11 +75,12 @@ export const sendRefusEmail = async (reservation) => {
 
 // --- 3. EMAIL DE CONFIRMATION (AVEC BOUTON WHATSAPP) ---
 export const sendConfirmationEmail = async (destinataire, reservation, typeStand) => {
-  const nomClient = reservation.nom || "Exposant"; 
+  const nomClient = reservation?.nom || "Exposant"; 
+  const typeSelectionne = typeStand || "Stand";
   
   // Préparation du lien WhatsApp
   const numeroWhatsApp = "2250769458746";
-  const messageWA = `Bonjour ! Je suis ${nomClient}. J'ai effectué une demande de stand (${typeStand}) pour "Buvons du Catho" 🙏.`;
+  const messageWA = `Bonjour ! Je suis ${nomClient}. J'ai effectué une demande de stand (${typeSelectionne}) pour "Buvons du Catho" 🙏.`;
   const whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(messageWA)}`;
 
   await callBrevoAPI({

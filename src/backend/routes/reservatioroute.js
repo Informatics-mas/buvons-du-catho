@@ -55,7 +55,7 @@ router.post("/", async (req, res) => {
     // 6. Envoi de l'email en tâche de fond
     sendConfirmationEmail(
       savedReservation.email, 
-      savedReservation.nomResponsable, 
+      savedReservation, 
       standChoisi.nom
     ).catch(err => console.error("📧 Erreur mail:", err.message));
 
