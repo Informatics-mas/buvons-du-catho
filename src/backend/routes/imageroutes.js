@@ -1,11 +1,11 @@
 import express from "express";
 const router = express.Router();
-import { upload, cloudinary } from "../utils/cloudinaryconfig.js";
+import { uploadCloudinary, cloudinary } from "../utils/cloudinaryconfig.js";
 import Image from "../models/image.js"; 
 import { protect } from "../middleware/authMiddleware.js";
 
 // --- UPLOAD MULTIPLE ---
-router.post("/upload-multiple", protect, upload.array("images", 10), async (req, res) => {
+router.post("/upload-multiple", protect, uploadCloudinary.array("images", 10), async (req, res) => {
   try {
     // req.files contient maintenant les URLs Cloudinary générées par le middleware
     const imagePromises = req.files.map(file => {
