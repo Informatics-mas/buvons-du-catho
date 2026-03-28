@@ -52,13 +52,17 @@ const allowedOrigins = process.env.FRONTEND_URL;
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || origin === allowedOrigins || origin.includes("localhost")) {
+    // Autoriser les requêtes sans origine (comme Postman ou mobile apps) 
+    // ou si l'origine est dans la liste autorisée
+    if (!origin || allowedOrigins.includes(origin) || origin.includes("localhost")) {
       callback(null, true);
     } else {
+      console.log("Origine rejetée par CORS:", origin); // Pour voir quelle URL bloque dans les logs
       callback(new Error('Bloqué par la politique CORS de Informatics'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
 
 app.use(express.json());
