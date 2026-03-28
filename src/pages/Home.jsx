@@ -26,8 +26,6 @@ export default function Home() {
            <Live />
         </section>
         
-        {/* 5. Souvenirs visuels */}
-        <Galerie />
       </main>
 
       <Footer />
