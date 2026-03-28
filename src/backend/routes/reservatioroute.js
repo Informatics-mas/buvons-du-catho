@@ -1,7 +1,7 @@
 import express from "express";
 import Reservation from "../models/reservation.js";
 import StandType from "../models/StandType.js"; // Attention à la casse pour Render
-import { protect } from "../middleware/authMiddleware.js";
+import { protect as authAdmin, protect } from "../middleware/authMiddleware.js";
 import { sendValidationEmail, sendRefusEmail, sendConfirmationEmail } from "../utils/sendEmail.js";
 import ExcelJS from "exceljs";
 
