@@ -1,19 +1,26 @@
 import { useEffect, useState } from "react";
-// 1. Importation de la Navbar
 import Navbar from "../components/Navbar"; 
 
 export default function Galerie() {
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState([]); // Initialisé à un tableau vide
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/images`);
+        const apiUrl = import.meta.env.VITE_API_URL;
+        const res = await fetch(`${apiUrl}/images`);
+        
+        // Sécurité : si la réponse n'est pas OK (ex: 404), on lance une erreur
+        if (!res.ok) throw new Error("Serveur indisponible");
+
         const data = await res.json();
-        setImages(data);
+        
+        // Sécurité : on s'assure que data est bien un tableau avant de le stocker
+        setImages(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Erreur galerie:", error);
+        setImages([]); // Force le tableau vide en cas d'erreur
       } finally {
         setLoading(false);
       }
@@ -24,10 +31,8 @@ export default function Galerie() {
 
   return (
     <>
-      {/* 2. Ajout de la Navbar */}
       <Navbar />
 
-      {/* 3. Ajustement du padding (pt-32) pour laisser la place à la Navbar */}
       <section className="pt-32 pb-20 px-6 bg-[#0B1A3B] text-white min-h-screen">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold text-center text-yellow-500 mb-6 italic uppercase tracking-tighter">
@@ -38,32 +43,39 @@ export default function Galerie() {
           </p>
 
           {loading ? (
-            <div className="flex justify-center items-center h-40">
+            <div className="flex flex-col justify-center items-center h-40 gap-4">
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-yellow-500"></div>
+              <p className="text-gray-400 animate-pulse">Chargement des souvenirs...</p>
             </div>
-          ) : images.length === 0 ? (
-            <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
+          ) : !Array.isArray(images) || images.length === 0 ? (
+            <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-sm">
               <p className="text-gray-400 text-lg">La galerie est en cours de préparation... ⏳</p>
+              <p className="text-gray-600 text-sm mt-2">Revenez très bientôt !</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {images.map((image) => (
                 <div
                   key={image._id}
-                  className="relative overflow-hidden rounded-2xl shadow-2xl group cursor-pointer bg-black border border-white/5"
+                  className="relative overflow-hidden rounded-3xl shadow-2xl group cursor-pointer bg-black/40 border border-white/5 aspect-[4/5] sm:aspect-square"
                 >
-                  {/* Overlay de titre au survol */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-end p-6">
-                    <p className="text-white font-bold text-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      {image.title}
-                    </p>
+                  {/* Overlay de titre au survol optimisé */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1A3B] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 flex items-end p-8">
+                    <div>
+                        <p className="text-yellow-500 text-xs font-bold uppercase tracking-widest mb-1 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-75">
+                            Événement
+                        </p>
+                        <p className="text-white font-black text-xl transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 delay-150">
+                            {image.title || "Souvenir"}
+                        </p>
+                    </div>
                   </div>
 
                   <img
                     src={image.url} 
                     alt={image.title}
                     loading="lazy"
-                    className="w-full h-80 object-cover transform group-hover:scale-105 transition duration-700 ease-in-out opacity-90 group-hover:opacity-100"
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition duration-1000 ease-out opacity-80 group-hover:opacity-100"
                   />
                 </div>
               ))}
