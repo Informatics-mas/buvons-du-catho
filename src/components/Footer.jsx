@@ -9,12 +9,12 @@ export default function Footer() {
         <div className="space-y-4">
           <h3 className="font-bold text-xl text-yellow-500 mb-2">📍 Infos Pratiques</h3>
           <p className="text-gray-300">
-            Paroisse Saint-Louis-orione, Anyama,Abidjan<br />
+            Paroisse Saint Louis orione, Anyama Belleville, Abidjan,<br />
             Côte d'Ivoire
           </p>
           <div className="text-gray-300">
             <p>📅 <span className="font-semibold text-white">Date :</span> 07 août 2026</p>
-            <p>⏰ <span className="font-semibold text-white">Horaires :</span> a partir de 14h</p>
+            <p>⏰ <span className="font-semibold text-white">Horaires :</span> A partir de 14h</p>
           </div>
         </div>
 
@@ -40,12 +40,6 @@ export default function Footer() {
           <div className="flex flex-col space-y-2">
             <a href="https://facebook.com/buvonsducatho" target="_blank" rel="noopener noreferrer" className="hover:translate-x-2 transition-transform inline-block">
               🔵 Facebook
-            </a>
-            <a href="https://instagram.com/buvonsducatho" target="_blank" rel="noopener noreferrer" className="hover:translate-x-2 transition-transform inline-block">
-              📸 Instagram
-            </a>
-            <a href="https://twitter.com/buvonsducatho" target="_blank" rel="noopener noreferrer" className="hover:translate-x-2 transition-transform inline-block">
-              🐦 Twitter (X)
             </a>
           </div>
         </div>
