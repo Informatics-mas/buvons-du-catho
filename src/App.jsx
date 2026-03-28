@@ -14,7 +14,6 @@ function App() {
         {/* --- ROUTES PUBLIQUES --- */}
         <Route path="/" element={<Home />} />
         <Route path="/don" element={<Don />} />
-        <Route path="/galerie" element={<Galerie />} />
         <Route path="/reservation" element={<Reservation />} />
         <Route path="/login" element={<Login />} />
 
