@@ -40,8 +40,8 @@ export default function Don() {
   };
 
   const redirigerWhatsApp = (nomDonneur, montantDon) => {
-    const numeroBrut = "2250769458746"; 
-    const message = `Bonjour ! Je suis ${nomDonneur}. Je souhaite faire un don de ${Number(montantDon).toLocaleString()} FCFA pour soutenir votre activité "Buvons du Catho" 🙏.`;
+    const numeroBrut = "2250718281682"; 
+    const message = `Salut ! 👋 Je suis ${nomDonneur}. J'aimerais faire un don de ${Number(montantDon).toLocaleString()} FCFA afin de soutenir votre activité.`;
     const whatsappUrl = `https://wa.me/${numeroBrut}?text=${encodeURIComponent(message)}`;
     
     setTimeout(() => {

@@ -41,16 +41,15 @@ export const sendValidationEmail = async (reservation, produit) => {
     to: [{ email: reservation.email, name: nomClient }],
     subject: "Confirmation : Votre stand est validé ! 🎉",
     htmlContent: `
-      <div style="font-family: sans-serif; line-height: 1.6; color: #333; padding: 20px;">
+      <div style="background-color: #0B1A3B; padding: 40px; font-family: sans-serif; text-align: center; color: white; border-radius: 10px;">
         <h2 style="color: #2e7d32;">Félicitations ! Votre demande de stand a été validée.</h2>
         <p>Bonjour <strong>${nomClient}</strong>,</p>
         <p>Nous avons le plaisir de vous confirmer votre réservation :</p>
         <ul>
-          <li><strong>Produit :</strong> ${produit?.nom || "Stand"}</li>
-          <li><strong>Nombre de stands :</strong> ${reservation.nombreStands}</li>
-          <li><strong>Emplacement :</strong> ${reservation.emplacement || "À confirmer"}</li>
+          <li style="color: #EAB308;"><strong>Produit :</strong> ${produit?.nom || "Stand"}</li>
+          <li style="color: #EAB308;"><strong>Nombre de stands :</strong> ${reservation.nombreStands}</li>
+          <li style="color: #EAB308;"><strong>Emplacement :</strong> ${reservation.emplacement || "À confirmer"}</li>
         </ul>
-        <p>Veuillez effectuer votre paiement sur ce numéro : <strong>0769458746</strong></p>
         <p>Merci pour votre participation 🙏</p>
       </div>
     `
@@ -64,7 +63,7 @@ export const sendRefusEmail = async (reservation) => {
     to: [{ email: reservation.email, name: nomClient }],
     subject: "Information concernant votre demande de stand",
     htmlContent: `
-      <div style="font-family: sans-serif; line-height: 1.6; color: #333; padding: 20px;">
+      <div style="background-color: #0B1A3B; padding: 40px; font-family: sans-serif; text-align: center; color: white; border-radius: 10px;">
         <h2>Mise à jour de votre demande</h2>
         <p>Bonjour ${nomClient}, votre demande n'a pas pu être acceptée pour cette édition.</p>
         <p>Merci pour votre compréhension.</p>
@@ -79,8 +78,8 @@ export const sendConfirmationEmail = async (destinataire, reservation, typeStand
   const typeSelectionne = typeStand || "Stand";
   
   // Préparation du lien WhatsApp
-  const numeroWhatsApp = "2250769458746";
-  const messageWA = `Bonjour ! Je suis ${nomClient}. J'ai effectué une demande de stand (${typeSelectionne}) pour "Buvons du Catho" 🙏.`;
+  const numeroWhatsApp = "2250718281682";
+  const messageWA = `Salut ! 👋 Je suis ${nomClient}, et je viens d'effectuer une demande de stand (${typeSelectionne}).`;
   const whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(messageWA)}`;
 
   await callBrevoAPI({
