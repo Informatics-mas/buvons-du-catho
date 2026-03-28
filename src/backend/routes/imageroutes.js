@@ -4,6 +4,17 @@ import { uploadCloudinary, cloudinary } from "../utils/cloudinaryconfig.js";
 import Image from "../models/image.js"; 
 import { protect } from "../middleware/authMiddleware.js";
 
+// --- RÉCUPÉRER TOUTES LES IMAGES (La route qui manquait !) ---
+router.get("/", async (req, res) => {
+  try {
+    const images = await Image.find().sort({ createdAt: -1 });
+    // IMPORTANT : On renvoie toujours un tableau, même vide []
+    res.json(images || []);
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la récupération des images" });
+  }
+});
+
 // --- UPLOAD MULTIPLE ---
 router.post("/upload-multiple", protect, uploadCloudinary.array("images", 10), async (req, res) => {
   try {
