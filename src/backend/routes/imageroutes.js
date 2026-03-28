@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import { upload, cloudinary } from "../config/cloudinary.js";
+import { upload, cloudinary } from "../utils/cloudinaryconfig.js";
 import Image from "../models/Image.js"; // Ton modèle Mongoose
 import { protect } from "../middleware/authMiddleware.js";
 
