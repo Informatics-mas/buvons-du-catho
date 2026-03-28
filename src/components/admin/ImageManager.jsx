@@ -163,16 +163,16 @@ export default function ImageManager() {
 
       {/* Grille d'affichage */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {images.map((img) => (
-          <div key={img._id} className="relative group aspect-video rounded-xl overflow-hidden bg-black/40">
+        {Array.isArray(images) && images.map((image) => (
+          <div key={image._id} className="relative group aspect-video rounded-xl overflow-hidden bg-black/40">
             {/* 💡 ICI ON RECONSTRUIT L'URL VERS LE BACKEND */}
             <img 
-              src={img.url} 
+              src={image.url} 
               className="w-full h-full object-cover" 
-              alt={img.title} 
+              alt={image.title} 
             />
             <button 
-              onClick={() => handleDelete(img._id)}
+              onClick={() => handleDelete(image._id)}
               className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Trash2 size={16} />
