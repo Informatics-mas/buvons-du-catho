@@ -1,72 +1,46 @@
 import express from "express";
-import Image from "../models/image.js";
-import { protect } from "../middleware/authMiddleware.js";
-import { uploadCloudinary } from '../utils/cloudinaryconfig.js';
-import { v2 as cloudinary } from 'cloudinary'; // Import pour la suppression
-
 const router = express.Router();
+import { upload, cloudinary } from "../config/cloudinary.js";
+import Image from "../models/Image.js"; // Ton modèle Mongoose
+import { protect } from "../middleware/authMiddleware.js";
 
-// ➕ AJOUTER IMAGE (Via Cloudinary)
-router.post("/", protect, uploadCloudinary.single("image"), async (req, res) => {
+// --- UPLOAD MULTIPLE ---
+router.post("/upload-multiple", protect, upload.array("images", 10), async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "Fichier manquant ou format non supporté" });
-    }
-
-    const nouvelleImage = new Image({
-      title: req.body.title,
-      description: req.body.description || "",
-      url: req.file.path, // URL sécurisée Cloudinary
-      cloudinary_id: req.file.filename // ID pour la suppression future
+    // req.files contient maintenant les URLs Cloudinary générées par le middleware
+    const imagePromises = req.files.map(file => {
+      const newImage = new Image({
+        title: file.originalname,
+        url: file.path, // C'est l'URL sécurisée HTTPS de Cloudinary
+        publicId: file.filename // Important pour la suppression plus tard
+      });
+      return newImage.save();
     });
 
-    const savedImage = await nouvelleImage.save();
-    
-    res.status(201).json({
-      success: true,
-      image: savedImage
-    });
-
+    const savedImages = await Promise.all(imagePromises);
+    res.status(201).json(savedImages);
   } catch (error) {
-    console.error("Erreur Upload Cloudinary:", error);
-    res.status(400).json({ 
-      success: false, 
-      error: "Erreur lors de l'enregistrement sur Cloudinary" 
-    });
+    res.status(500).json({ message: "Erreur Cloudinary", error: error.message });
   }
 });
 
-// 📥 RÉCUPÉRER TOUTES LES IMAGES
-router.get("/", async (req, res) => {
-  try {
-    const images = await Image.find().sort({ createdAt: -1 });
-    res.json(images);
-  } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la récupération des images" });
-  }
-});
-
-// ❌ SUPPRIMER IMAGE (DB + Cloudinary)
+// --- SUPPRESSION ---
 router.delete("/:id", protect, async (req, res) => {
   try {
     const image = await Image.findById(req.params.id);
-    
-    if (!image) {
-      return res.status(404).json({ message: "Image introuvable" });
+    if (!image) return res.status(404).json({ message: "Image introuvable" });
+
+    // 1. Supprimer de Cloudinary via le publicId
+    if (image.publicId) {
+      await cloudinary.uploader.destroy(image.publicId);
     }
 
-    // 1. Supprimer l'image physiquement sur Cloudinary
-    if (image.cloudinary_id) {
-      await cloudinary.uploader.destroy(image.cloudinary_id);
-    }
-
-    // 2. Supprimer l'entrée dans la base de données
+    // 2. Supprimer de MongoDB
     await Image.findByIdAndDelete(req.params.id);
-
-    res.json({ success: true, message: "Image supprimée de la base et de Cloudinary" });
+    
+    res.json({ message: "Image supprimée de Cloudinary et de la base !" });
   } catch (error) {
-    console.error("Erreur Suppression:", error);
-    res.status(500).json({ message: "Erreur lors de la suppression" });
+    res.status(500).json({ message: "Erreur suppression", error: error.message });
   }
 });
 

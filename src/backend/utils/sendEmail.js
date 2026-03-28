@@ -103,5 +103,5 @@ export const sendConfirmationEmail = async (destinataire, reservation, typeStand
       </div>
     `
   });
-  console.log(`✅ Email de CONFIRMATION envoyé à ${nomAffichage}`);
+  console.log(`✅ Email de CONFIRMATION envoyé à ${nomClient}`);
 };
