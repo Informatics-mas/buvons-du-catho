@@ -153,6 +153,7 @@ export default function Reservation() {
                     onChange={handleChange} 
                     rows="3"
                     placeholder="Donnez-nous une brève description de ce que vous souhaitez exposer ainsi que votre motivation. (Minimum 10 caractères)"
+                    required
                     className="w-full p-4 rounded-xl bg-black/20 border border-white/10 focus:border-yellow-500 outline-none transition-all resize-none"
                   />
                 </div>

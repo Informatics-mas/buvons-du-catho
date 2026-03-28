@@ -74,28 +74,28 @@ export const sendRefusEmail = async (reservation) => {
 };
 
 // --- 3. EMAIL DE CONFIRMATION (AVEC BOUTON WHATSAPP) ---
-export const sendConfirmationEmail = async (destinataire, nomExposant, typeStand) => {
-  const nomAffichage = nomExposant || "Exposant";
+export const sendConfirmationEmail = async (destinataire, reservation, typeStand) => {
+  const nomClient = reservation.nom || "Exposant"; 
   
   // Préparation du lien WhatsApp
   const numeroWhatsApp = "2250769458746";
-  const messageWA = `Bonjour ! Je suis ${nomAffichage}. J'ai effectué une demande de stand (${typeStand}) pour "Buvons du Catho" 🙏.`;
+  const messageWA = `Bonjour ! Je suis ${nomClient}. J'ai effectué une demande de stand (${typeStand}) pour "Buvons du Catho" 🙏.`;
   const whatsappUrl = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(messageWA)}`;
 
   await callBrevoAPI({
-    to: [{ email: destinataire, name: nomAffichage }],
+    to: [{ email: destinataire, name: nomClient }],
     subject: "Demande reçue - Buvons du Catho",
     htmlContent: `
       <div style="background-color: #0B1A3B; padding: 40px; font-family: sans-serif; text-align: center; color: white; border-radius: 10px;">
         <h1 style="color: #EAB308;">DEMANDE REÇUE !</h1>
-        <p style="font-size: 16px;">Bonjour <strong>${nomAffichage}</strong>,</p>
+        <p style="font-size: 16px;">Bonjour <strong>${nomClient}</strong>,</p>
         <p>Votre demande pour un stand <strong>${typeStand}</strong> est en cours de traitement.</p>
         
         <div style="margin-top: 30px;">
           <p style="font-size: 14px; color: #cbd5e1;">Pour accélérer le traitement, vous pouvez nous contacter sur WhatsApp :</p>
           <p>cliquez sur ce <a href="${whatsappUrl}" 
-             style="background-color: #25D366; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block; margin-top: 10px;">
-            LIEN
+             style="background-color: #25D366; color: white; padding: 2px 5px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block; margin-top: 10px;">
+            LIEN WHATSAPP
           </a> pour lancer la discussion WhatsApp</p>
         </div>
         
