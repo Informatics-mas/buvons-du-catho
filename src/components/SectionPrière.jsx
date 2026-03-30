@@ -1,3 +1,6 @@
+import React from "react";
+import SafeIcon from "./Safeicon";
+
 export default function MomentSpirituel() {
   return (
     <section className="relative min-h-[70vh] flex flex-col items-center justify-center px-6 py-24 bg-[#0B1A3B] overflow-hidden">
@@ -15,8 +18,9 @@ export default function MomentSpirituel() {
           
           {/* Carte Verset du Jour */}
           <div className="group p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-500 shadow-2xl">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl text-yellow-500">📖</span>
+            <div className="flex items-center gap-4 mb-6">
+              {/* Utilisation de SafeIcon au lieu de l'emoji livre */}
+              <SafeIcon name="BookOpen" className="w-8 h-8 text-yellow-500" strokeWidth={1.5} />
               <h3 className="font-bold text-xl text-yellow-500 uppercase tracking-tight">Verset du Jour</h3>
             </div>
             <p className="text-xl md:text-2xl italic leading-relaxed text-gray-100 font-serif">
@@ -27,8 +31,9 @@ export default function MomentSpirituel() {
 
           {/* Carte Exhortation */}
           <div className="group p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-500 shadow-2xl">
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl text-yellow-500">💡</span>
+            <div className="flex items-center gap-4 mb-6">
+              {/* Utilisation de SafeIcon au lieu de l'emoji ampoule */}
+              <SafeIcon name="Lightbulb" className="w-8 h-8 text-yellow-500" strokeWidth={1.5} />
               <h3 className="font-bold text-xl text-yellow-500 uppercase tracking-tight">Exhortation</h3>
             </div>
             <p className="text-lg leading-relaxed text-gray-300">

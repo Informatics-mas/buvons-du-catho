@@ -1,6 +1,14 @@
+import React from "react";
+import SafeIcon from "../components/Safeicon";
+
 export default function Live() {
   // Remplace "YOUR_VIDEO_ID" par l'ID réel de ton stream YouTube ou Facebook Live
   const LIVE_VIDEO_ID = "YOUR_VIDEO_ID"; 
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Lien copié dans le presse-papier !");
+  };
 
   return (
     <section className="relative min-h-[80vh] flex flex-col items-center justify-center px-6 py-24 bg-[#081229] text-white overflow-hidden">
@@ -13,7 +21,10 @@ export default function Live() {
         {/* Badge LIVE Clignotant */}
         <div className="flex items-center gap-2 mb-6 bg-red-600/20 border border-red-600/50 px-4 py-1.5 rounded-full animate-pulse">
           <span className="w-3 h-3 bg-red-600 rounded-full shadow-[0_0_10px_#dc2626]"></span>
-          <span className="text-sm font-bold tracking-widest uppercase">Direct</span>
+          <span className="text-sm font-bold tracking-widest uppercase flex items-center gap-2">
+            <SafeIcon name="Radio" size={14} />
+            Direct
+          </span>
         </div>
 
         <h2 className="text-4xl md:text-6xl font-extrabold mb-6 text-center text-yellow-500 drop-shadow-sm">
@@ -44,15 +55,18 @@ export default function Live() {
             href={`https://www.youtube.com/watch?v=${LIVE_VIDEO_ID}`} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-xl transition-all text-sm font-semibold"
+            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-6 py-3 rounded-xl transition-all text-sm font-semibold group"
           >
-            💬 Participer au chat YouTube
+            <SafeIcon name="MessageCircle" size={18} className="text-red-500 group-hover:scale-110 transition-transform" />
+            <span>Participer au chat YouTube</span>
           </a>
+          
           <button 
-            onClick={() => navigator.clipboard.writeText(window.location.href)}
-            className="flex items-center gap-2 bg-yellow-500 text-black px-6 py-3 rounded-xl hover:bg-yellow-400 transition-all text-sm font-bold shadow-lg"
+            onClick={handleShare}
+            className="flex items-center gap-2 bg-yellow-500 text-black px-6 py-3 rounded-xl hover:bg-yellow-400 transition-all text-sm font-bold shadow-lg active:scale-95"
           >
-            🔗 Partager le lien
+            <SafeIcon name="Share2" size={18} />
+            <span>Partager le lien</span>
           </button>
         </div>
       </div>

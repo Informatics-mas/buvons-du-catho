@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import React from "react";
+import SafeIcon from "./Safeicon";
 
 export default function Hero() {
   const containerRef = useRef(null);
@@ -47,12 +49,15 @@ export default function Hero() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+          
           <Link to="/reservation"
-             className="bg-yellow-500 text-black px-8 py-4 rounded-full font-bold hover:scale-105 hover:bg-yellow-400 transition-all shadow-lg shadow-yellow-500/20">
+            className="flex items-center justify-center gap-2 bg-yellow-500 text-black px-8 py-4 rounded-full font-bold hover:bg-yellow-400 hover:scale-105 transition-all shadow-lg text-center group">
+            <SafeIcon name="Store" size={20} className="transition-transform group-hover:-rotate-12" />
             Réserver un stand
           </Link>
           <Link to="/don"
-             className="border-2 border-white/50 px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-[#0B1A3B] transition-all backdrop-blur-sm">
+            className="flex items-center justify-center gap-2 border-2 border-white px-8 py-4 rounded-full font-semibold hover:bg-white hover:text-[#0B1A3B] transition-all text-center group">
+            <SafeIcon name="Heart" size={20} className="text-red-400 group-hover:fill-current" />
             Faire un don
           </Link>
         </div>
