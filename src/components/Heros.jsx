@@ -39,13 +39,13 @@ export default function Hero() {
 
       {/* Contenu Principal */}
       <div className="relative z-10 px-6 max-w-4xl">
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-fadeInUp text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">
-          ✝️ Le Buvons du Catho
+        <h1 className=" flex items-center justify-center gap-2 text-5xl md:text-7xl font-bold mb-6 leading-tight animate-fadeInUp text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">
+          <SafeIcon name="Cross" size={80} /> Le Buvons du Catho
         </h1>
         
         <p className="text-xl md:text-2xl mb-10 text-gray-200 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
           Un festival de foi, de fraternité et de partage.<br className="hidden md:block" />
-          <span className="text-yellow-200/80">🙏 Prière • 🍹 Convivialité • ❤️ Communion</span>
+          <span className="text-yellow-200/80 flex items-center justify-center gap-2"><SafeIcon name="Church" size={40} /> Prière • <SafeIcon name="Beer" size={40} /> Convivialité • <SafeIcon name="Heart" size={40} /> Communion</span>
         </p>
 
         <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fadeInUp" style={{ animationDelay: '0.4s' }}>

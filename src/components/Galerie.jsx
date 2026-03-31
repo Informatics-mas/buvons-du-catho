@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar"; 
+import SafeIcon from "./Safeicon";
 
 export default function Galerie() {
   const [images, setImages] = useState([]); // Initialisé à un tableau vide
@@ -35,11 +36,11 @@ export default function Galerie() {
 
       <section className="pt-32 pb-20 px-6 bg-[#0B1A3B] text-white min-h-screen">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center text-yellow-500 mb-6 italic uppercase tracking-tighter">
-            📸 Souvenirs des éditions
+          <h2 className="text-4xl md:text-5xl font-bold text-center text-yellow-500 mb-6 italic uppercase tracking-tighter flex items-center justify-center gap-2">
+            <SafeIcon name="Camera" size={60} />  Souvenirs des éditions
           </h2>
-          <p className="text-center text-gray-300 mb-16 max-w-2xl mx-auto">
-            Revivez les moments forts de fraternité et de partage de "Buvons du Catho". ✨
+          <p className="text-center text-gray-300 mb-16 max-w-2xl mx-auto flex items-center justify-center gap-2">
+            Revivez les moments forts de fraternité et de partage de "Buvons du Catho". <SafeIcon name="Sparkles" size={22} className="text-yellow-400" />
           </p>
 
           {loading ? (
@@ -49,7 +50,7 @@ export default function Galerie() {
             </div>
           ) : !Array.isArray(images) || images.length === 0 ? (
             <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-sm">
-              <p className="text-gray-400 text-lg">La galerie est en cours de préparation... ⏳</p>
+              <p className="text-gray-400 text-lg flex items-center justify-center gap-2">La galerie est en cours de préparation... <SafeIcon name="Hourglass" size={22} className="text-yellow-400" /></p>
               <p className="text-gray-600 text-sm mt-2">Revenez très bientôt !</p>
             </div>
           ) : (

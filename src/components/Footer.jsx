@@ -62,7 +62,7 @@ export default function Footer() {
           </div>
           <div className="flex flex-col space-y-2">
             <a 
-              href="https://facebook.com/buvonsducatho" 
+              href="https://facebook.com/groups/oppje.anyama/" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="flex items-center gap-2 hover:translate-x-2 transition-transform hover:text-blue-400"
