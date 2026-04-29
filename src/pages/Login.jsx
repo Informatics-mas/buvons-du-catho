@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Lock, Mail, Loader2, ShieldCheck } from "lucide-react";
+// Ajout des icônes Eye et EyeOff pour la visibilité
+import { Lock, Mail, Loader2, ShieldCheck, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // État pour basculer la visibilité
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 1. Rediriger si déjà connecté
   useEffect(() => {
     if (localStorage.getItem("adminToken")) {
       navigate("/admin");
@@ -33,10 +34,7 @@ export default function Login() {
       const data = await res.json();
 
       if (res.ok && data.token) {
-        // IMPORTANT : Utilisation de 'adminToken' pour la cohérence globale
         localStorage.setItem("adminToken", data.token);
-        
-        // Redirige vers la page demandée initialement ou vers /admin
         const origin = location.state?.from?.pathname || "/admin";
         navigate(origin);
       } else {
@@ -53,7 +51,6 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-[#0B1A3B] bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-[#1a2e5a] via-[#0B1A3B] to-black p-4">
       <div className="w-full max-w-md animate-fadeIn">
         
-        {/* Logo / Icône de protection */}
         <div className="flex justify-center mb-6">
           <div className="p-4 bg-yellow-500/10 rounded-full border border-yellow-500/20">
             <ShieldCheck className="h-10 w-10 text-yellow-500" />
@@ -96,14 +93,23 @@ export default function Login() {
               <label className="text-xs font-bold text-gray-400 uppercase ml-1">Mot de passe</label>
               <div className="relative group">
                 <input
-                  type="password"
-                  className="w-full bg-black/20 border border-white/10 rounded-xl py-4 px-4 pl-12 text-white placeholder-gray-600 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all duration-300"
+                  type={showPassword ? "text" : "password"} // Type dynamique selon l'état[cite: 6]
+                  className="w-full bg-black/20 border border-white/10 rounded-xl py-4 px-4 pl-12 pr-12 text-white placeholder-gray-600 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all duration-300"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
                 <Lock className="absolute left-4 top-4.5 h-5 w-5 text-gray-500 group-focus-within:text-yellow-500 transition-colors" />
+                
+                {/* Bouton pour afficher/cacher[cite: 6] */}
+                <button
+                  type="button" // Important pour ne pas soumettre le formulaire[cite: 6]
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-4.5 text-gray-500 hover:text-yellow-500 transition-colors focus:outline-none"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
             </div>
 
