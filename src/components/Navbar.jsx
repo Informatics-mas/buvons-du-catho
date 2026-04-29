@@ -67,7 +67,6 @@ function Navbar() {
           <Link to="/" className="hover:text-yellow-500 text-lg transition-colors">Accueil</Link>
           <Link to="/reservation" className="hover:text-yellow-500 text-lg transition-colors">Réserver un stand</Link>
           <Link to="/don" className="hover:text-yellow-500 text-lg transition-colors">Faire un don</Link>
-          <Link to="/live" className="hover:text-yellow-500 text-lg transition-colors">Le Live</Link>
           <Link to="/galerie" className="hover:text-yellow-500 text-lg transition-colors">Galerie</Link>
         </div>
       </div>
