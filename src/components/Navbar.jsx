@@ -38,7 +38,7 @@ function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex gap-8 font-semibold items-center">
-          {["Accueil", "Reservation", "Don", "Live", "Galerie"].map((item) => (
+          {["Accueil", "Reservation", "Don", "Galerie"].map((item) => (
             <Link 
               key={item}
               to={item === "Accueil" ? "/" : `/${item.toLowerCase()}`}
