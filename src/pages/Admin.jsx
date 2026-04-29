@@ -12,12 +12,14 @@ import {
 } from "chart.js";
 import * as XLSX from 'xlsx';
 import { io } from "socket.io-client";
+import { Trash, Download, ShieldCheck } from "lucide-react";
 
 // Import de tes managers
 import ImageManager from "../components/admin/ImageManager";
 import ReservationManager from "../components/admin/ReservationManager";
 import StandTypeManager from "../components/admin/standTypeManager";
 import DonManager from "../components/admin/DonsManager";
+import LiveManager from "../components/admin/LiveManager";
 
 // Enregistrement Chart.js
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, Title);
@@ -29,7 +31,7 @@ export default function Admin() {
 
   // --- LOGIQUE SOCKET.IO (À l'intérieur du composant) ---
   useEffect(() => {
-  const socket = io("https://buvons-du-catho.onrender.com");
+  const socket = io(import.meta.env.VITE_API_URL);
 
   // --- ÉCOUTE DES DONS ---
   socket.on("nouveauDon", (nouveauDon) => {
@@ -127,7 +129,7 @@ export default function Admin() {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
-          alert("Base de données réinitialisée ! ✨");
+          alert("Base de données réinitialisée ! ");
           window.location.reload();
         }
       } catch (error) {
@@ -141,7 +143,7 @@ export default function Admin() {
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-4 border-b border-white/10 pb-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold text-yellow-500">🔐 Dashboard</h1>
+          <h1 className="flex text-3xl md:text-4xl font-bold text-yellow-500"><ShieldCheck className="h-10 w-10 text-yellow-500" /> Dashboard</h1>
           <p className="text-gray-400 mt-1">Informatics Admin System v1.1 - Direct Mode</p>
         </div>
         <button onClick={handleLogout} className="bg-red-600/20 text-red-400 border border-red-600/50 px-6 py-2 rounded-full hover:bg-red-600 hover:text-white transition-all">
@@ -197,17 +199,18 @@ export default function Admin() {
         <ReservationManager />
         <StandTypeManager />
         <DonManager />
+        <LiveManager /> 
       </div>
       
       {/* DANGER ZONE */}
       <div className="bg-red-900/10 p-8 rounded-3xl border border-red-500/20 mt-12 mb-10">
         <h3 className="text-2xl font-bold text-red-500 mb-4">Actions Critique</h3>
         <div className="flex flex-wrap gap-4">
-          <button onClick={exporterDonnees} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl transition-all">
-            📥 Télécharger Bilan Excel
+          <button onClick={exporterDonnees} className=" flex bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl transition-all">
+            <Download className="h-6 w-6 text-white" /> Télécharger Bilan Excel
           </button>
-          <button onClick={handleReset} className="bg-transparent border border-red-600 text-red-500 hover:bg-red-600 hover:text-white font-bold py-3 px-8 rounded-xl transition-all">
-            🗑️ Reset l'Édition
+          <button onClick={handleReset} className="flex bg-transparent border border-red-600 text-red-500 hover:bg-red-600 hover:text-white font-bold py-3 px-8 rounded-xl transition-all">
+            <Trash className="h-6 w-6 text-red-500" /> Reset l'Édition
           </button>
         </div>
       </div>

@@ -169,13 +169,13 @@ export default function ReservationManager() {
                       <div className="flex gap-2 justify-center">
                         {r.statut === "en_attente" && (
                           <>
-                            <button onClick={() => handleAction(r._id, "valider")} className="text-green-500 hover:text-green-300 text-xs">Valider</button>
-                            <button onClick={() => handleAction(r._id, "refuser")} className="text-red-500 hover:text-red-300 text-xs">Refuser</button>
+                            <button onClick={() => handleAction(r._id, "valider")} className="bg-green-600 hover:bg-green-700 text-white font-bold p-1 rounded-xl text-xs">Valider</button>
+                            <button onClick={() => handleAction(r._id, "refuser")} className="bg-transparent border border-red-600 text-red-500 hover:bg-red-600 hover:text-white font-bold p-1 rounded-xl text-xs">Refuser</button>
                           </>
                         )}
                         <button 
                           onClick={() => startEdit(r)} 
-                          className="text-gray-400 hover:text-white text-xs border border-gray-600 px-2 py-1 rounded"
+                          className="text-gray-400 hover:text-white text-xs border border-gray-600 px-2 py-1 rounded-xl transition-all"
                         >
                           Modifier
                         </button>

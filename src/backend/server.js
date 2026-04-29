@@ -23,8 +23,9 @@ const server = http.createServer(app);
 // 4. Initialisation de Socket.io avec le serveur HTTP
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
-    methods: ["GET", "POST"]
+    origin: [process.env.FRONTEND_URL, "http://localhost:5173"],
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
@@ -46,6 +47,7 @@ import imageroutes from "./routes/imageroutes.js";
 import reservatioroute from "./routes/reservatioroute.js";
 import donroutes from "./routes/donroutes.js";
 import standTypeRoutes from "./routes/standTypeRoutes.js";
+import YoutubeRoutes from "./routes/youtubeLinkRoutes.js"; // Nouvelle route pour le lien YouTube
 
 // --- MIDDLEWARES ---
 const allowedOrigins = process.env.FRONTEND_URL;
@@ -88,7 +90,7 @@ app.use("/api/reservations", reservatioroute);
 app.use("/api/dons", donroutes);
 app.use("/api/stand-types", standTypeRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-
+app.use("/api/Youtube", YoutubeRoutes);
 // --- ROUTES ADMINISTRATIVES SPÉCIALES ---
 import Don from "./models/don.js";
 import Reservation from "./models/reservation.js";
